@@ -8,8 +8,25 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (!error && data.user) {
+      const meta = data.user.user_metadata
+      if (meta?.partner1_name && meta?.partner2_name) {
+        const { data: existing } = await supabase
+          .from('weddings')
+          .select('id')
+          .eq('user_id', data.user.id)
+          .single()
+
+        if (!existing) {
+          await supabase.from('weddings').insert({
+            user_id: data.user.id,
+            partner1_name: meta.partner1_name,
+            partner2_name: meta.partner2_name,
+          })
+        }
+      }
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
