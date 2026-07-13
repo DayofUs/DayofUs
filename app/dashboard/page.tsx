@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Header from '@/components/Header'
@@ -15,10 +16,27 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .single()
 
+  const { data: rsvps } = wedding ? await supabase
+    .from('rsvps')
+    .select('*')
+    .eq('wedding_id', wedding.id)
+    .order('created_at', { ascending: false }) : { data: [] }
+
+  const { data: songs } = wedding ? await supabase
+    .from('song_requests')
+    .select('*')
+    .eq('wedding_id', wedding.id)
+    .order('created_at', { ascending: false }) : { data: [] }
+
   return (
     <>
       <Header />
-      <DashboardClient user={user} wedding={wedding} />
+      <DashboardClient
+        user={user}
+        wedding={wedding}
+        rsvps={rsvps || []}
+        songs={songs || []}
+      />
     </>
   )
 }
