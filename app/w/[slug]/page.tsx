@@ -1,15 +1,15 @@
-
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import GuestPage from './GuestPage'
 
-export default async function WeddingGuestPage({ params }: { params: { slug: string } }) {
+export default async function WeddingGuestPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const supabase = await createClient()
 
   const { data: wedding } = await supabase
     .from('weddings')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .single()
 
   if (!wedding) notFound()
