@@ -28,6 +28,12 @@ export default async function DashboardPage() {
     .eq('wedding_id', wedding.id)
     .order('created_at', { ascending: false }) : { data: [] }
 
+  const { data: photos } = wedding ? await supabase
+    .from('wedding_photos')
+    .select('*')
+    .eq('wedding_id', wedding.id)
+    .order('created_at', { ascending: false }) : { data: [] }
+
   return (
     <>
       <Header />
@@ -36,6 +42,7 @@ export default async function DashboardPage() {
         wedding={wedding}
         rsvps={rsvps || []}
         songs={songs || []}
+        photos={photos || []}
       />
     </>
   )
