@@ -28,6 +28,12 @@ interface Song {
   submitter: string;
 }
 
+interface Photo {
+  id: string;
+  photo_url: string;
+  uploaded_by: string | null;
+}
+
 interface Track {
   trackId: number;
   trackName: string;
@@ -37,8 +43,8 @@ interface Track {
   collectionName: string;
 }
 
-export default function GuestPage({ wedding, rsvps, songs }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[] }) {
-  const [tab, setTab] = useState<'info' | 'rsvp' | 'playlist'>('info');
+export default function GuestPage({ wedding, rsvps, songs, photos = [] }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[]; photos?: Photo[] }) {
+  const [tab, setTab] = useState<'info' | 'rsvp' | 'playlist' | 'photos'>('info');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   const [guestName, setGuestName] = useState('');
@@ -178,7 +184,7 @@ export default function GuestPage({ wedding, rsvps, songs }: { wedding: Wedding;
 
       <div className="max-w-2xl mx-auto px-6">
         <div className="flex rounded-2xl p-1 mb-8" style={{background:'#F0E8E4'}}>
-          {[['info', '📋 Info'], ['rsvp', '✉️ RSVP'], ['playlist', '🎵 Songs']].map(([key, label]) => (
+          {[['info', '📋 Info'], ['rsvp', '✉️ RSVP'], ['playlist', '🎵 Songs'], ['photos', '📸 Photos']].map(([key, label]) => (
             <button key={key} onClick={() => setTab(key as any)} className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all" style={{background: tab === key ? '#ffffff' : 'transparent', color: tab === key ? '#B07D6E' : '#6B7280', boxShadow: tab === key ? '0 1px 4px rgba(0,0,0,0.1)' : 'none'}}>
               {label}
             </button>
@@ -339,6 +345,32 @@ export default function GuestPage({ wedding, rsvps, songs }: { wedding: Wedding;
             )}
           </div>
         )}
+
+        {tab === 'photos' && (
+          <div className="pb-12 space-y-4">
+            <div className="bg-white rounded-2xl p-6 text-center" style={{border:'1px solid #E8DDD8'}}>
+              <div className="text-4xl mb-3">📸</div>
+              <h2 className="font-semibold text-lg mb-2" style={{color:'#2C2C3E'}}>Share Your Photos</h2>
+              <p className="text-sm mb-4" style={{color:'#6B7280'}}>Snap a moment from the celebration and add it to the shared gallery.</p>
+              <Link href={`/upload/${wedding.slug}`} className="inline-block px-6 py-3 rounded-xl text-sm font-semibold" style={{background:'#B07D6E', color:'#ffffff'}}>
+                Add a Photo
+              </Link>
+            </div>
+
+            {photos.length > 0 && (
+              <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
+                <h3 className="font-semibold mb-4" style={{color:'#2C2C3E'}}>Gallery ({photos.length})</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {photos.map(p => (
+                    <div key={p.id} className="aspect-square rounded-xl overflow-hidden" style={{background:'#F8FAFC'}}>
+                      <img src={p.photo_url} alt={p.uploaded_by || 'Wedding photo'} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="text-center py-8 px-6" style={{borderTop:'1px solid #E8DDD8'}}>
@@ -348,4 +380,4 @@ export default function GuestPage({ wedding, rsvps, songs }: { wedding: Wedding;
       </div>
     </div>
   );
-            }
+}
