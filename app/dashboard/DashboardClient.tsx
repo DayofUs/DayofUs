@@ -14,6 +14,7 @@ interface Wedding {
   slug: string | null;
   venue: string | null;
   message: string | null;
+  is_premium?: boolean | null;
 }
 
 interface User {
@@ -38,11 +39,18 @@ interface Song {
   submitter: string | null;
 }
 
-export default function DashboardClient({ user, wedding, rsvps, songs }: {
+interface Photo {
+  id: string;
+  photo_url: string;
+  uploaded_by: string | null;
+}
+
+export default function DashboardClient({ user, wedding, rsvps, songs, photos = [] }: {
   user: User;
   wedding: Wedding | null;
   rsvps: RSVP[];
   songs: Song[];
+  photos?: Photo[];
 }) {
   const [weddingDate, setWeddingDate] = useState(wedding?.wedding_date || '');
   const [venue, setVenue] = useState(wedding?.venue || '');
@@ -50,10 +58,13 @@ export default function DashboardClient({ user, wedding, rsvps, songs }: {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedUpload, setCopiedUpload] = useState(false);
   const router = useRouter();
 
   const coupleName = wedding ? `${wedding.partner1_name} & ${wedding.partner2_name}` : 'Your Wedding';
   const guestLink = wedding?.slug ? `https://dayofus.org/w/${wedding.slug}` : null;
+  const uploadLink = wedding?.slug ? `https://dayofus.org/upload/${wedding.slug}` : null;
+  const qrUrl = uploadLink ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(uploadLink)}` : null;
   const confirmedGuests = rsvps.filter(r => r.attending === 'yes').reduce((sum, r) => sum + (r.guests || 1), 0);
   const declinedGuests = rsvps.filter(r => r.attending === 'no');
   const daysUntil = weddingDate ? Math.ceil((new Date(weddingDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
@@ -77,6 +88,13 @@ export default function DashboardClient({ user, wedding, rsvps, songs }: {
     navigator.clipboard.writeText(guestLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyUploadLink = () => {
+    if (!uploadLink) return;
+    navigator.clipboard.writeText(uploadLink);
+    setCopiedUpload(true);
+    setTimeout(() => setCopiedUpload(false), 2000);
   };
 
   return (
@@ -121,6 +139,43 @@ export default function DashboardClient({ user, wedding, rsvps, songs }: {
           </div>
         ))}
       </div>
+
+      {/* Photo Gallery */}
+      {wedding?.slug && (
+        <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
+          <h2 className="font-semibold text-lg mb-1" style={{color:'#2C2C3E'}}>
+            📸 Photo Gallery ({photos.length}{!wedding.is_premium ? '/30' : ''})
+          </h2>
+          <p className="text-sm mb-4" style={{color:'#6B7280'}}>
+            Guests scan this code at your wedding to upload photos straight from their phone — no app needed.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-6 items-start mb-6">
+            {qrUrl && (
+              <img src={qrUrl} alt="QR code for photo upload" className="rounded-xl flex-shrink-0" style={{border:'1px solid #E8DDD8', width:160, height:160}} />
+            )}
+            <div className="flex-1 w-full">
+              <div className="px-4 py-3 rounded-xl text-sm font-medium truncate mb-3" style={{background:'#F8FAFC', border:'1px solid #E8DDD8', color:'#2C2C3E'}}>
+                {uploadLink}
+              </div>
+              <button onClick={copyUploadLink} className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-semibold" style={{background:'#B07D6E', color:'#ffffff'}}>
+                {copiedUpload ? '✓ Copied!' : 'Copy Upload Link'}
+              </button>
+              <p className="text-xs mt-2" style={{color:'#6B7280'}}>Tip: print the QR code and place it on tables at your reception.</p>
+            </div>
+          </div>
+          {photos.length === 0 ? (
+            <p className="text-sm" style={{color:'#6B7280'}}>No photos yet — share the QR code at your wedding to start collecting memories.</p>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {photos.map(p => (
+                <div key={p.id} className="aspect-square rounded-xl overflow-hidden" style={{background:'#F8FAFC'}}>
+                  <img src={p.photo_url} alt={p.uploaded_by || 'Wedding photo'} className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Wedding details */}
       <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
@@ -243,4 +298,4 @@ export default function DashboardClient({ user, wedding, rsvps, songs }: {
 
     </main>
   );
-                }
+}
