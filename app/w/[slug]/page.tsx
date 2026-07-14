@@ -26,5 +26,11 @@ export default async function WeddingGuestPage({ params }: { params: Promise<{ s
     .eq('wedding_id', wedding.id)
     .order('created_at', { ascending: false })
 
-  return <GuestPage wedding={wedding} rsvps={rsvps || []} songs={songs || []} />
+  const { data: photos } = await supabase
+    .from('wedding_photos')
+    .select('*')
+    .eq('wedding_id', wedding.id)
+    .order('created_at', { ascending: false })
+
+  return <GuestPage wedding={wedding} rsvps={rsvps || []} songs={songs || []} photos={photos || []} />
 }
