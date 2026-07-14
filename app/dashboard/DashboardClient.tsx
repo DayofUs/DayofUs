@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import PhotoGallery from '@/components/PhotoGallery';
 
 interface Wedding {
   id: string;
@@ -166,13 +167,7 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
           {photos.length === 0 ? (
             <p className="text-sm" style={{color:'#6B7280'}}>No photos yet — share the QR code at your wedding to start collecting memories.</p>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              {photos.map(p => (
-                <div key={p.id} className="aspect-square rounded-xl overflow-hidden" style={{background:'#F8FAFC'}}>
-                  <img src={p.photo_url} alt={p.uploaded_by || 'Wedding photo'} className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
+            <PhotoGallery photos={photos} />
           )}
         </div>
       )}
