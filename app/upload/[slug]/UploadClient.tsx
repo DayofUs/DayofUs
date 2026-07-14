@@ -137,7 +137,7 @@ export default function UploadClient({
             <input
               type="file"
               accept="image/*"
-              capture="environment"
+             
               onChange={handleFileSelect}
               className="hidden"
             />
@@ -150,7 +150,7 @@ export default function UploadClient({
             <input
               type="file"
               accept="image/*"
-              capture="environment"
+             
               onChange={handleFileSelect}
               className="hidden"
             />
