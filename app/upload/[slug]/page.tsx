@@ -33,3 +33,4 @@ export default async function UploadPage({ params }: { params: Promise<{ slug: s
     />
   )
 }
+
