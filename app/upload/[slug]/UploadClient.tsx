@@ -128,33 +128,59 @@ export default function UploadClient({
             <img src={preview} alt="Preview" className="w-full rounded-xl" style={{maxHeight: '320px', objectFit: 'cover'}} />
           </div>
         ) : (
-          <label
-            className="flex flex-col items-center justify-center w-full h-48 rounded-xl cursor-pointer mb-4"
-            style={{border: '2px dashed #E8DDD8', background: '#F8FAFC'}}
-          >
-            <span className="text-3xl mb-2">📷</span>
-            <span className="text-sm font-medium" style={{color:'#6B7280'}}>Tap to take or choose a photo</span>
-            <input
-              type="file"
-              accept="image/*"
-             
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-          </label>
+          <div className="flex gap-3 mb-4">
+            <label
+              className="flex-1 flex flex-col items-center justify-center h-32 rounded-xl cursor-pointer"
+              style={{border: '2px dashed #E8DDD8', background: '#F8FAFC'}}
+            >
+              <span className="text-2xl mb-1">📷</span>
+              <span className="text-xs font-medium text-center px-2" style={{color:'#6B7280'}}>Take Photo</span>
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </label>
+            <label
+              className="flex-1 flex flex-col items-center justify-center h-32 rounded-xl cursor-pointer"
+              style={{border: '2px dashed #E8DDD8', background: '#F8FAFC'}}
+            >
+              <span className="text-2xl mb-1">🖼️</span>
+              <span className="text-xs font-medium text-center px-2" style={{color:'#6B7280'}}>Choose from Gallery</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </label>
+          </div>
         )}
 
         {preview && (
-          <label className="block text-center text-sm mb-4 cursor-pointer" style={{color:'#B07D6E', fontWeight: 600}}>
-            Choose a different photo
-            <input
-              type="file"
-              accept="image/*"
-             
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-          </label>
+          <div className="flex gap-3 mb-4">
+            <label className="flex-1 text-center text-sm py-2 rounded-xl cursor-pointer" style={{color:'#B07D6E', fontWeight: 600, background: '#F5EAE4'}}>
+              📷 Retake
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </label>
+            <label className="flex-1 text-center text-sm py-2 rounded-xl cursor-pointer" style={{color:'#B07D6E', fontWeight: 600, background: '#F5EAE4'}}>
+              🖼️ Choose Different
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </label>
+          </div>
         )}
 
         <div className="mb-4">
