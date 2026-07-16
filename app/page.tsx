@@ -152,8 +152,9 @@ export default function HomePage() {
                   ))}
                 </ul>
                 <Link href="/signup" className="block text-center font-semibold py-3.5 rounded-xl" style={{background:'#B07D6E', color:'#ffffff'}}>
-                  Start Free, Upgrade Anytime
+                  Sign Up & Upgrade
                 </Link>
+                <p className="text-xs text-center mt-3" style={{color:'#6B7280'}}>Create your free account first, then upgrade instantly from your dashboard</p>
               </div>
 
             </div>
