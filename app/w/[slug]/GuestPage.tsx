@@ -154,10 +154,10 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [] }: { wedd
         {wedding.venue && <p className="text-sm mb-6" style={{color:'rgba(255,255,255,0.65)'}}>📍 {wedding.venue}</p>}
 
         {wedding.wedding_date && (
-          <div className="grid grid-cols-4 gap-3 max-w-sm mx-auto mb-6">
+          <div className="grid gap-3 max-w-sm mx-auto mb-6" style={{gridTemplateColumns: '1.3fr 1fr 1fr 1fr'}}>
             {[['Days', timeLeft.days], ['Hours', timeLeft.hours], ['Mins', timeLeft.minutes], ['Secs', timeLeft.seconds]].map(([label, val]) => {
               const display = String(val).padStart(2,'0');
-              const sizeClass = display.length > 2 ? 'text-xl sm:text-2xl' : 'text-3xl';
+              const sizeClass = display.length > 3 ? 'text-2xl' : 'text-3xl';
               return (
                 <div key={label} className="rounded-xl p-2 sm:p-3" style={{background:'rgba(255,255,255,0.12)'}}>
                   <div className={`font-serif font-bold ${sizeClass}`} style={{color:'#ffffff'}}>{display}</div>
