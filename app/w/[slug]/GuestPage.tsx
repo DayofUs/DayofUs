@@ -12,6 +12,7 @@ interface Wedding {
   venue: string | null;
   message: string | null;
   slug: string;
+  is_premium?: boolean | null;
 }
 
 interface RSVP {
@@ -35,6 +36,13 @@ interface Photo {
   uploaded_by: string | null;
 }
 
+interface Wish {
+  id: string;
+  guest_name: string;
+  message: string;
+  created_at?: string;
+}
+
 interface Track {
   trackId: number;
   trackName: string;
@@ -44,8 +52,8 @@ interface Track {
   collectionName: string;
 }
 
-export default function GuestPage({ wedding, rsvps, songs, photos = [] }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[]; photos?: Photo[] }) {
-  const [tab, setTab] = useState<'info' | 'rsvp' | 'playlist' | 'photos'>('info');
+export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes = [] }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[]; photos?: Photo[]; wishes?: Wish[] }) {
+  const [tab, setTab] = useState<'info' | 'rsvp' | 'playlist' | 'photos' | 'wishes'>('info');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, years: 0, months: 0, remDays: 0 });
 
   const [guestName, setGuestName] = useState('');
@@ -65,6 +73,13 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [] }: { wedd
   const [added, setAdded] = useState<number | null>(null);
   const [playing, setPlaying] = useState<string | null>(null);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+
+  const [wishName, setWishName] = useState('');
+  const [wishMessage, setWishMessage] = useState('');
+  const [wishList, setWishList] = useState<Wish[]>(wishes);
+  const [wishLoading, setWishLoading] = useState(false);
+  const [wishError, setWishError] = useState('');
+  const [wishDone, setWishDone] = useState(false);
 
   const coupleName = `${wedding.partner1_name} & ${wedding.partner2_name}`;
 
@@ -144,6 +159,22 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [] }: { wedd
 
   const confirmedCount = rsvps.filter(r => r.attending === 'yes').reduce((sum, r) => sum + (r.guests || 1), 0);
 
+  const submitWish = async () => {
+    if (!wishName || !wishMessage) { setWishError('Please fill in your name and a message.'); return; }
+    setWishLoading(true);
+    setWishError('');
+    const supabase = createClient();
+    const { data, error } = await supabase.from('wishes').insert({
+      wedding_id: wedding.id,
+      guest_name: wishName,
+      message: wishMessage,
+    }).select().single();
+    if (error) { setWishError('Something went wrong. Please try again.'); setWishLoading(false); return; }
+    if (data) setWishList(prev => [data, ...prev]);
+    setWishDone(true);
+    setWishLoading(false);
+  };
+
   return (
     <div style={{minHeight:'100vh', background:'#FDFAF7'}}>
 
@@ -191,9 +222,9 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [] }: { wedd
       )}
 
       <div className="max-w-2xl mx-auto px-6">
-        <div className="flex rounded-2xl p-1 mb-8" style={{background:'#F0E8E4'}}>
-          {[['info', '📋 Info'], ['rsvp', '✉️ RSVP'], ['playlist', '🎵 Songs'], ['photos', '📸 Photos']].map(([key, label]) => (
-            <button key={key} onClick={() => setTab(key as any)} className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all" style={{background: tab === key ? '#ffffff' : 'transparent', color: tab === key ? '#B07D6E' : '#6B7280', boxShadow: tab === key ? '0 1px 4px rgba(0,0,0,0.1)' : 'none'}}>
+        <div className="flex rounded-2xl p-1 mb-8 gap-1 overflow-x-auto" style={{background:'#F0E8E4'}}>
+          {[['info', '📋 Info'], ['rsvp', '✉️ RSVP'], ['playlist', '🎵 Songs'], ['photos', '📸 Photos'], ['wishes', '💌 Wishes']].map(([key, label]) => (
+            <button key={key} onClick={() => setTab(key as any)} className="flex-shrink-0 px-4 py-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap" style={{background: tab === key ? '#ffffff' : 'transparent', color: tab === key ? '#B07D6E' : '#6B7280', boxShadow: tab === key ? '0 1px 4px rgba(0,0,0,0.1)' : 'none'}}>
               {label}
             </button>
           ))}
@@ -369,6 +400,56 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [] }: { wedd
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
                 <h3 className="font-semibold mb-4" style={{color:'#2C2C3E'}}>Gallery ({photos.length})</h3>
                 <PhotoGallery photos={photos} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === 'wishes' && (
+          <div className="pb-12 space-y-4">
+            {!wedding.is_premium ? (
+              <div className="bg-white rounded-2xl p-8 text-center" style={{border:'1px solid #E8DDD8'}}>
+                <div className="text-4xl mb-3">🔒</div>
+                <h2 className="font-semibold text-lg mb-2" style={{color:'#2C2C3E'}}>Wishes Wall Not Yet Available</h2>
+                <p className="text-sm" style={{color:'#6B7280'}}>{coupleName} haven't unlocked the Wishes Wall for this wedding yet. Check back later!</p>
+              </div>
+            ) : wishDone ? (
+              <div className="bg-white rounded-2xl p-8 text-center" style={{border:'1px solid #E8DDD8'}}>
+                <div className="text-5xl mb-4">💌</div>
+                <h2 className="font-serif text-2xl font-bold mb-2" style={{color:'#2C2C3E'}}>Thank you, {wishName}!</h2>
+                <p style={{color:'#6B7280'}}>Your wish has been added to the wall.</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
+                <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>Leave a Wish</h2>
+                {wishError && <div className="mb-4 p-3 rounded-xl text-sm" style={{background:'#FEE2E2', color:'#DC2626'}}>{wishError}</div>}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Your Name</label>
+                    <input value={wishName} onChange={e => setWishName(e.target.value)} placeholder="e.g. Aunt Carol" className="w-full h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Your Message</label>
+                    <textarea value={wishMessage} onChange={e => setWishMessage(e.target.value)} placeholder="Share your wishes for the happy couple..." rows={4} className="w-full px-4 py-3 rounded-xl outline-none resize-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
+                  </div>
+                  <button onClick={submitWish} disabled={!wishName || !wishMessage || wishLoading} className="w-full font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2" style={{background:'#B07D6E', color:'#ffffff'}}>
+                    {wishLoading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>Submitting...</> : 'Add Your Wish 💌'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {wedding.is_premium && wishList.length > 0 && (
+              <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
+                <h3 className="font-semibold mb-4" style={{color:'#2C2C3E'}}>Wishes ({wishList.length})</h3>
+                <div className="space-y-3">
+                  {wishList.map(w => (
+                    <div key={w.id} className="p-4 rounded-xl" style={{background:'#F5EAE4'}}>
+                      <p className="text-sm italic mb-2" style={{color:'#2C2C3E'}}>"{w.message}"</p>
+                      <p className="text-xs font-semibold" style={{color:'#B07D6E'}}>— {w.guest_name}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
