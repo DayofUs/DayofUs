@@ -68,6 +68,10 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
   const [copied, setCopied] = useState(false);
   const [copiedUpload, setCopiedUpload] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
+  const [customSlug, setCustomSlug] = useState(wedding?.slug || '');
+  const [slugSaving, setSlugSaving] = useState(false);
+  const [slugSaved, setSlugSaved] = useState(false);
+  const [slugError, setSlugError] = useState('');
   const router = useRouter();
 
   const coupleName = wedding ? `${wedding.partner1_name} & ${wedding.partner2_name}` : 'Your Wedding';
@@ -121,6 +125,48 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
     }
   };
 
+  const RESERVED_SLUGS = ['login', 'signup', 'dashboard', 'budget', 'countdown', 'rsvp', 'playlist', 'upload', 'privacy', 'contact', 'api', 'w', 'auth', 'checklist', 'venue'];
+
+  const saveSlug = async () => {
+    if (!wedding) return;
+    const cleaned = customSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+
+    if (!cleaned) { setSlugError('Please enter a link.'); return; }
+    if (cleaned.length < 3) { setSlugError('Your link must be at least 3 characters.'); return; }
+    if (RESERVED_SLUGS.includes(cleaned)) { setSlugError('This link is reserved. Please choose another.'); return; }
+
+    setSlugSaving(true);
+    setSlugError('');
+    const supabase = createClient();
+
+    if (cleaned !== wedding.slug) {
+      const { data: existing } = await supabase
+        .from('weddings')
+        .select('id')
+        .eq('slug', cleaned)
+        .neq('id', wedding.id)
+        .maybeSingle();
+
+      if (existing) {
+        setSlugError('This link is already taken. Please choose another.');
+        setSlugSaving(false);
+        return;
+      }
+    }
+
+    const { error } = await supabase.from('weddings').update({ slug: cleaned }).eq('id', wedding.id);
+    if (error) {
+      setSlugError('Something went wrong. Please try again.');
+      setSlugSaving(false);
+      return;
+    }
+
+    setCustomSlug(cleaned);
+    setSlugSaving(false);
+    setSlugSaved(true);
+    setTimeout(() => { setSlugSaved(false); router.refresh(); }, 1500);
+  };
+
   return (
     <main className="max-w-4xl mx-auto px-6 py-12">
 
@@ -146,6 +192,46 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
           <Link href={`/w/${wedding?.slug}`} target="_blank" className="inline-block mt-3 text-xs" style={{color:'rgba(255,255,255,0.6)'}}>
             Preview your guest page →
           </Link>
+
+          <div className="mt-5 pt-5" style={{borderTop:'1px solid rgba(255,255,255,0.15)'}}>
+            {wedding?.is_premium ? (
+              <>
+                <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{color:'rgba(255,255,255,0.6)'}}>Customize Your Link</div>
+                {slugError && <div className="mb-2 p-2 rounded-lg text-xs" style={{background:'rgba(220,38,38,0.2)', color:'#ffffff'}}>{slugError}</div>}
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="flex-1 flex items-center rounded-xl overflow-hidden" style={{background:'rgba(255,255,255,0.15)'}}>
+                    <span className="pl-4 text-xs" style={{color:'rgba(255,255,255,0.5)'}}>dayofus.org/w/</span>
+                    <input
+                      value={customSlug}
+                      onChange={e => setCustomSlug(e.target.value)}
+                      className="flex-1 bg-transparent py-3 pr-3 text-sm font-medium outline-none min-w-0"
+                      style={{color:'#ffffff'}}
+                    />
+                  </div>
+                  <button
+                    onClick={saveSlug}
+                    disabled={slugSaving || customSlug === wedding?.slug}
+                    className="px-5 py-3 rounded-xl text-sm font-semibold flex-shrink-0 disabled:opacity-40"
+                    style={{background:'#ffffff', color:'#B07D6E'}}
+                  >
+                    {slugSaved ? '✓ Saved!' : slugSaving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <p className="text-xs" style={{color:'rgba(255,255,255,0.7)'}}>Want a custom link like dayofus.org/w/yourname? Unlock it with Premium.</p>
+                <button
+                  onClick={handleUpgrade}
+                  disabled={upgrading}
+                  className="px-5 py-2.5 rounded-xl text-xs font-semibold flex-shrink-0 disabled:opacity-40"
+                  style={{background:'#ffffff', color:'#B07D6E'}}
+                >
+                  {upgrading ? 'Redirecting...' : 'Upgrade to Premium'}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
