@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import PhotoGallery from '@/components/PhotoGallery';
+import jsPDF from 'jspdf';
 
 interface Wedding {
   id: string;
@@ -165,6 +166,104 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
     setSlugSaving(false);
     setSlugSaved(true);
     setTimeout(() => { setSlugSaved(false); router.refresh(); }, 1500);
+  };
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = 22;
+
+    doc.setFont('times', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(44, 44, 62);
+    doc.text(coupleName, pageWidth / 2, y, { align: 'center' });
+    y += 8;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(107, 114, 128);
+    doc.text('Guest List & Playlist', pageWidth / 2, y, { align: 'center' });
+    y += 10;
+
+    doc.setDrawColor(232, 221, 216);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 12;
+
+    const attending = rsvps.filter(r => r.attending === 'yes');
+    const declined = rsvps.filter(r => r.attending === 'no');
+
+    doc.setFont('times', 'bold');
+    doc.setFontSize(15);
+    doc.setTextColor(44, 44, 62);
+    doc.text(`Guest List (${confirmedGuests} confirmed)`, 20, y);
+    y += 9;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+
+    if (attending.length === 0) {
+      doc.setTextColor(107, 114, 128);
+      doc.text('No confirmed guests yet.', 20, y);
+      y += 7;
+    } else {
+      attending.forEach(r => {
+        if (y > 275) { doc.addPage(); y = 20; }
+        doc.setTextColor(44, 44, 62);
+        doc.text(`${r.guest_name}  —  ${r.guests} guest${r.guests === 1 ? '' : 's'}`, 20, y);
+        y += 6;
+        if (r.dietary) {
+          doc.setFontSize(9);
+          doc.setTextColor(107, 114, 128);
+          doc.text(`Dietary: ${r.dietary}`, 24, y);
+          doc.setFontSize(10);
+          y += 6;
+        }
+      });
+    }
+
+    if (declined.length > 0) {
+      y += 5;
+      if (y > 270) { doc.addPage(); y = 20; }
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(44, 44, 62);
+      doc.text(`Declined (${declined.length})`, 20, y);
+      doc.setFont('helvetica', 'normal');
+      y += 7;
+      declined.forEach(r => {
+        if (y > 275) { doc.addPage(); y = 20; }
+        doc.setTextColor(107, 114, 128);
+        doc.text(r.guest_name, 20, y);
+        y += 6;
+      });
+    }
+
+    y += 8;
+    if (y > 260) { doc.addPage(); y = 20; }
+    doc.setDrawColor(232, 221, 216);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 10;
+
+    doc.setFont('times', 'bold');
+    doc.setFontSize(15);
+    doc.setTextColor(44, 44, 62);
+    doc.text(`Playlist (${songs.length} songs)`, 20, y);
+    y += 9;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    if (songs.length === 0) {
+      doc.setTextColor(107, 114, 128);
+      doc.text('No song requests yet.', 20, y);
+    } else {
+      songs.forEach((s, i) => {
+        if (y > 275) { doc.addPage(); y = 20; }
+        doc.setTextColor(44, 44, 62);
+        doc.text(`${i + 1}. ${s.track_name} — ${s.artist_name}`, 20, y);
+        y += 6;
+      });
+    }
+
+    doc.save(`${wedding?.slug || 'wedding'}-guest-list-and-playlist.pdf`);
   };
 
   return (
@@ -456,6 +555,34 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
             </Link>
           ))}
         </div>
+      </div>
+
+      {/* PDF Export */}
+      <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
+        <h2 className="font-semibold text-lg mb-1" style={{color:'#2C2C3E'}}>📄 Export Guest List & Playlist</h2>
+        {wedding?.is_premium ? (
+          <>
+            <p className="text-sm mb-4" style={{color:'#6B7280'}}>Download a printable PDF of your confirmed guests, dietary needs, and requested songs.</p>
+            <button onClick={exportPDF} className="font-semibold px-5 py-2.5 rounded-xl text-sm" style={{background:'#B07D6E', color:'#ffffff'}}>
+              Download PDF
+            </button>
+          </>
+        ) : (
+          <div className="p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{background:'#F5EAE4'}}>
+            <div>
+              <div className="text-sm font-semibold" style={{color:'#2C2C3E'}}>Export your guest list & playlist as a PDF</div>
+              <div className="text-xs" style={{color:'#6B7280'}}>Plus unlimited photos, wishes wall, custom slug & unlimited guests — one-time $19</div>
+            </div>
+            <button
+              onClick={handleUpgrade}
+              disabled={upgrading}
+              className="font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-40 flex-shrink-0"
+              style={{background:'#B07D6E', color:'#ffffff'}}
+            >
+              {upgrading ? 'Redirecting...' : 'Upgrade to Premium'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Account */}
