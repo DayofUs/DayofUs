@@ -155,12 +155,16 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [] }: { wedd
 
         {wedding.wedding_date && (
           <div className="grid grid-cols-4 gap-3 max-w-sm mx-auto mb-6">
-            {[['Days', timeLeft.days], ['Hours', timeLeft.hours], ['Mins', timeLeft.minutes], ['Secs', timeLeft.seconds]].map(([label, val]) => (
-              <div key={label} className="rounded-xl p-3" style={{background:'rgba(255,255,255,0.12)'}}>
-                <div className="font-serif text-3xl font-bold" style={{color:'#ffffff'}}>{String(val).padStart(2,'0')}</div>
-                <div className="text-xs" style={{color:'rgba(255,255,255,0.6)'}}>{label}</div>
-              </div>
-            ))}
+            {[['Days', timeLeft.days], ['Hours', timeLeft.hours], ['Mins', timeLeft.minutes], ['Secs', timeLeft.seconds]].map(([label, val]) => {
+              const display = String(val).padStart(2,'0');
+              const sizeClass = display.length > 2 ? 'text-xl sm:text-2xl' : 'text-3xl';
+              return (
+                <div key={label} className="rounded-xl p-2 sm:p-3" style={{background:'rgba(255,255,255,0.12)'}}>
+                  <div className={`font-serif font-bold ${sizeClass}`} style={{color:'#ffffff'}}>{display}</div>
+                  <div className="text-xs" style={{color:'rgba(255,255,255,0.6)'}}>{label}</div>
+                </div>
+              );
+            })}
           </div>
         )}
 
