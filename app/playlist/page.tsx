@@ -87,16 +87,16 @@ export default function PlaylistPage() {
               <input value={submitter} onChange={e => setSubmitter(e.target.value)} placeholder="e.g. Aunt Carol" className="w-full h-12 px-4 rounded-xl outline-none mb-4" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
 
               <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Search by song name or artist</label>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && search()}
                   placeholder="e.g. Dancing Queen, ABBA, Ed Sheeran..."
-                  className="flex-1 h-12 px-4 rounded-xl outline-none"
+                  className="flex-1 h-12 px-4 rounded-xl outline-none min-w-0"
                   style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
                 />
-                <button onClick={search} disabled={searching || !query.trim()} className="px-6 h-12 rounded-xl font-semibold text-sm disabled:opacity-40" style={{background:'#B07D6E', color:'#ffffff'}}>
+                <button onClick={search} disabled={searching || !query.trim()} className="w-full sm:w-auto px-6 h-12 rounded-xl font-semibold text-sm disabled:opacity-40 flex-shrink-0" style={{background:'#B07D6E', color:'#ffffff'}}>
                   {searching ? '...' : 'Search'}
                 </button>
               </div>
