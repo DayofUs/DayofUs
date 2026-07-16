@@ -52,7 +52,7 @@ interface Track {
   collectionName: string;
 }
 
-export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes = [] }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[]; photos?: Photo[]; wishes?: Wish[] }) {
+export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes = [], guestLimitReached = false }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[]; photos?: Photo[]; wishes?: Wish[]; guestLimitReached?: boolean }) {
   const [tab, setTab] = useState<'info' | 'rsvp' | 'playlist' | 'photos' | 'wishes'>('info');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, years: 0, months: 0, remDays: 0 });
 
@@ -104,6 +104,7 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
 
   const submitRSVP = async () => {
     if (!guestName || !attending) { setRsvpError('Please fill in your name and attendance.'); return; }
+    if (guestLimitReached && attending === 'yes') { setRsvpError('This wedding has reached its guest capacity for accepted RSVPs. You can still let them know you cannot make it.'); return; }
     setRsvpLoading(true);
     setRsvpError('');
     const supabase = createClient();
@@ -276,6 +277,11 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
             ) : (
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
                 <h2 className="font-semibold text-lg mb-6" style={{color:'#2C2C3E'}}>Your RSVP</h2>
+                {guestLimitReached && (
+                  <div className="mb-4 p-3 rounded-xl text-sm" style={{background:'#FEF3C7', color:'#92400E'}}>
+                    This wedding has reached its guest capacity for accepted RSVPs. You're still welcome to let them know if you can't make it.
+                  </div>
+                )}
                 {rsvpError && <div className="mb-4 p-3 rounded-xl text-sm" style={{background:'#FEE2E2', color:'#DC2626'}}>{rsvpError}</div>}
                 <div className="space-y-4">
                   <div>
@@ -286,7 +292,7 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
                     <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Will you be attending?</label>
                     <div className="flex gap-3">
                       {[['yes', '✅ Joyfully accepts'], ['no', '❌ Regretfully declines']].map(([val, label]) => (
-                        <button key={val} onClick={() => setAttending(val)} className="flex-1 py-3 rounded-xl text-sm font-semibold border-2 transition-colors" style={{background: attending === val ? '#B07D6E' : '#ffffff', borderColor: attending === val ? '#B07D6E' : '#E8DDD8', color: attending === val ? '#ffffff' : '#2C2C3E'}}>
+                        <button key={val} onClick={() => setAttending(val)} disabled={guestLimitReached && val === 'yes'} className="flex-1 py-3 rounded-xl text-sm font-semibold border-2 transition-colors disabled:opacity-40" style={{background: attending === val ? '#B07D6E' : '#ffffff', borderColor: attending === val ? '#B07D6E' : '#E8DDD8', color: attending === val ? '#ffffff' : '#2C2C3E'}}>
                           {label}
                         </button>
                       ))}
@@ -310,7 +316,7 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
                     <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Message to the couple (optional)</label>
                     <textarea value={guestMessage} onChange={e => setGuestMessage(e.target.value)} placeholder="Share your well wishes..." rows={3} className="w-full px-4 py-3 rounded-xl outline-none resize-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
                   </div>
-                  <button onClick={submitRSVP} disabled={!guestName || !attending || rsvpLoading} className="w-full font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2" style={{background:'#B07D6E', color:'#ffffff'}}>
+                  <button onClick={submitRSVP} disabled={!guestName || !attending || rsvpLoading || (guestLimitReached && attending === 'yes')} className="w-full font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2" style={{background:'#B07D6E', color:'#ffffff'}}>
                     {rsvpLoading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>Submitting...</> : 'Submit RSVP 💍'}
                   </button>
                 </div>
