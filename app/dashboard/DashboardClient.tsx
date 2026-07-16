@@ -46,12 +46,19 @@ interface Photo {
   uploaded_by: string | null;
 }
 
-export default function DashboardClient({ user, wedding, rsvps, songs, photos = [] }: {
+interface Wish {
+  id: string;
+  guest_name: string;
+  message: string;
+}
+
+export default function DashboardClient({ user, wedding, rsvps, songs, photos = [], wishes = [] }: {
   user: User;
   wedding: Wedding | null;
   rsvps: RSVP[];
   songs: Song[];
   photos?: Photo[];
+  wishes?: Wish[];
 }) {
   const [weddingDate, setWeddingDate] = useState(wedding?.wedding_date || '');
   const [venue, setVenue] = useState(wedding?.venue || '');
@@ -288,6 +295,41 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
                   <div className="font-medium text-sm truncate" style={{color:'#2C2C3E'}}>{s.track_name}</div>
                   <div className="text-xs" style={{color:'#6B7280'}}>{s.artist_name}{s.submitter ? ` · ${s.submitter}` : ''}</div>
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Wishes Wall */}
+      <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
+        <h2 className="font-semibold text-lg mb-1" style={{color:'#2C2C3E'}}>💌 Wishes Wall ({wishes.length})</h2>
+        {!wedding?.is_premium ? (
+          <>
+            <p className="text-sm mb-4" style={{color:'#6B7280'}}>Let guests leave heartfelt messages for you both — unlock this with Premium.</p>
+            <div className="p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{background:'#F5EAE4'}}>
+              <div>
+                <div className="text-sm font-semibold" style={{color:'#2C2C3E'}}>Unlock the Wishes Wall</div>
+                <div className="text-xs" style={{color:'#6B7280'}}>Plus unlimited photos, custom slug, unlimited guests & PDF export — one-time $19</div>
+              </div>
+              <button
+                onClick={handleUpgrade}
+                disabled={upgrading}
+                className="font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-40 flex-shrink-0"
+                style={{background:'#B07D6E', color:'#ffffff'}}
+              >
+                {upgrading ? 'Redirecting...' : 'Upgrade to Premium'}
+              </button>
+            </div>
+          </>
+        ) : wishes.length === 0 ? (
+          <p className="text-sm" style={{color:'#6B7280'}}>No wishes yet — guests can leave one from your guest page.</p>
+        ) : (
+          <div className="space-y-3 mt-4">
+            {wishes.map(w => (
+              <div key={w.id} className="p-4 rounded-xl" style={{background:'#F5EAE4'}}>
+                <p className="text-sm italic mb-2" style={{color:'#2C2C3E'}}>"{w.message}"</p>
+                <p className="text-xs font-semibold" style={{color:'#B07D6E'}}>— {w.guest_name}</p>
               </div>
             ))}
           </div>
