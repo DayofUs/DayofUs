@@ -60,6 +60,7 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedUpload, setCopiedUpload] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
   const router = useRouter();
 
   const coupleName = wedding ? `${wedding.partner1_name} & ${wedding.partner2_name}` : 'Your Wedding';
@@ -96,6 +97,21 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
     navigator.clipboard.writeText(uploadLink);
     setCopiedUpload(true);
     setTimeout(() => setCopiedUpload(false), 2000);
+  };
+
+  const handleUpgrade = async () => {
+    setUpgrading(true);
+    try {
+      const res = await fetch('/api/create-checkout-session', { method: 'POST' });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setUpgrading(false);
+      }
+    } catch {
+      setUpgrading(false);
+    }
   };
 
   return (
@@ -150,6 +166,22 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
           <p className="text-sm mb-4" style={{color:'#6B7280'}}>
             Guests scan this code at your wedding to upload photos straight from their phone — no app needed.
           </p>
+          {!wedding.is_premium && (
+            <div className="mb-6 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{background:'#F5EAE4'}}>
+              <div>
+                <div className="text-sm font-semibold" style={{color:'#2C2C3E'}}>Unlock unlimited photos</div>
+                <div className="text-xs" style={{color:'#6B7280'}}>Plus custom slug, unlimited guests, wishes wall & PDF export — one-time $19</div>
+              </div>
+              <button
+                onClick={handleUpgrade}
+                disabled={upgrading}
+                className="font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-40 flex-shrink-0"
+                style={{background:'#B07D6E', color:'#ffffff'}}
+              >
+                {upgrading ? 'Redirecting...' : 'Upgrade to Premium'}
+              </button>
+            </div>
+          )}
           <div className="flex flex-col sm:flex-row gap-6 items-start mb-6">
             {qrUrl && (
               <img src={qrUrl} alt="QR code for photo upload" className="rounded-xl flex-shrink-0" style={{border:'1px solid #E8DDD8', width:160, height:160}} />
