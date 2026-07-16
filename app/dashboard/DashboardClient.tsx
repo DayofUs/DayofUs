@@ -153,7 +153,7 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
           { label: 'Days to go', value: daysUntil !== null && daysUntil > 0 ? daysUntil.toLocaleString() : '—' },
-          { label: 'Guests confirmed', value: confirmedGuests.toString() },
+          { label: 'Guests confirmed', value: `${confirmedGuests}${!wedding?.is_premium ? '/75' : ''}` },
           { label: 'Song requests', value: songs.length.toString() },
           { label: 'RSVPs received', value: rsvps.length.toString() },
         ].map(({ label, value }) => (
@@ -240,6 +240,22 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
         <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>
           Guest RSVPs ({rsvps.length})
         </h2>
+        {!wedding?.is_premium && confirmedGuests >= 75 && (
+          <div className="mb-4 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{background:'#FEF3C7'}}>
+            <div>
+              <div className="text-sm font-semibold" style={{color:'#92400E'}}>You've reached your free guest limit (75)</div>
+              <div className="text-xs" style={{color:'#92400E'}}>New guests can still decline, but accepted RSVPs are capped until you upgrade</div>
+            </div>
+            <button
+              onClick={handleUpgrade}
+              disabled={upgrading}
+              className="font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-40 flex-shrink-0"
+              style={{background:'#B07D6E', color:'#ffffff'}}
+            >
+              {upgrading ? 'Redirecting...' : 'Upgrade to Premium'}
+            </button>
+          </div>
+        )}
         {rsvps.length === 0 ? (
           <p className="text-sm" style={{color:'#6B7280'}}>No RSVPs yet — share your guest link above to start collecting responses.</p>
         ) : (
