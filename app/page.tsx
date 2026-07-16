@@ -45,7 +45,7 @@ export default function HomePage() {
                 <Link href="/signup" className="font-semibold px-8 py-4 rounded-full text-center transition-colors" style={{background:'#B07D6E', color:'#ffffff'}}>
                   Create Your Free Wedding Page
                 </Link>
-                <Link href="/w/zac-and-hannah" className="font-semibold px-8 py-4 rounded-full text-center border transition-colors" style={{background:'#ffffff', color:'#2C2C3E', borderColor:'#E8DDD8'}}>
+                <Link href="/demo" className="font-semibold px-8 py-4 rounded-full text-center border transition-colors" style={{background:'#ffffff', color:'#2C2C3E', borderColor:'#E8DDD8'}}>
                   See a Live Example
                 </Link>
               </div>
