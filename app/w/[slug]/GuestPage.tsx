@@ -46,7 +46,7 @@ interface Track {
 
 export default function GuestPage({ wedding, rsvps, songs, photos = [] }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[]; photos?: Photo[] }) {
   const [tab, setTab] = useState<'info' | 'rsvp' | 'playlist' | 'photos'>('info');
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, years: 0, months: 0, remDays: 0 });
 
   const [guestName, setGuestName] = useState('');
   const [attending, setAttending] = useState('');
@@ -73,11 +73,15 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [] }: { wedd
     const interval = setInterval(() => {
       const diff = new Date(wedding.wedding_date!).getTime() - Date.now();
       if (diff <= 0) return;
+      const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
       setTimeLeft({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        days: totalDays,
         hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
         minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
         seconds: Math.floor((diff % (1000 * 60)) / 1000),
+        years: Math.floor(totalDays / 365),
+        months: Math.floor((totalDays % 365) / 30),
+        remDays: (totalDays % 365) % 30,
       });
     }, 1000);
     return () => clearInterval(interval);
@@ -154,17 +158,16 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [] }: { wedd
         {wedding.venue && <p className="text-sm mb-6" style={{color:'rgba(255,255,255,0.65)'}}>📍 {wedding.venue}</p>}
 
         {wedding.wedding_date && (
-          <div className="grid gap-3 max-w-sm mx-auto mb-6" style={{gridTemplateColumns: '1.3fr 1fr 1fr 1fr'}}>
-            {[['Days', timeLeft.days], ['Hours', timeLeft.hours], ['Mins', timeLeft.minutes], ['Secs', timeLeft.seconds]].map(([label, val]) => {
-              const display = String(val).padStart(2,'0');
-              const sizeClass = display.length > 3 ? 'text-2xl' : 'text-3xl';
-              return (
-                <div key={label} className="rounded-xl p-2 sm:p-3" style={{background:'rgba(255,255,255,0.12)'}}>
-                  <div className={`font-serif font-bold ${sizeClass}`} style={{color:'#ffffff'}}>{display}</div>
-                  <div className="text-xs" style={{color:'rgba(255,255,255,0.6)'}}>{label}</div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-4 gap-3 max-w-sm mx-auto mb-6">
+            {(timeLeft.days >= 365
+              ? [['Years', timeLeft.years], ['Months', timeLeft.months], ['Days', timeLeft.remDays], ['Hours', timeLeft.hours]]
+              : [['Days', timeLeft.days], ['Hours', timeLeft.hours], ['Mins', timeLeft.minutes], ['Secs', timeLeft.seconds]]
+            ).map(([label, val]) => (
+              <div key={label} className="rounded-xl p-3" style={{background:'rgba(255,255,255,0.12)'}}>
+                <div className="font-serif text-3xl font-bold" style={{color:'#ffffff'}}>{String(val).padStart(2,'0')}</div>
+                <div className="text-xs" style={{color:'rgba(255,255,255,0.6)'}}>{label}</div>
+              </div>
+            ))}
           </div>
         )}
 
