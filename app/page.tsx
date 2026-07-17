@@ -16,7 +16,7 @@ const quickTools = [
   { icon: '📅', title: 'Countdown Timer', desc: 'A quick live countdown you can share right away.', href: '/countdown' },
   { icon: '✉️', title: 'RSVP Form Demo', desc: 'See how our guest RSVP form works.', href: '/rsvp' },
   { icon: '🎵', title: 'Song Search Demo', desc: 'Try searching and previewing songs.', href: '/playlist' },
-  { icon: '📋', title: 'Wedding Checklist', desc: 'A month-by-month planning checklist.', href: null },
+  { icon: '📋', title: 'Wedding Checklist', desc: 'A month-by-month planning checklist.', href: '/checklist' },
   { icon: '🏨', title: 'Venue Cost Calculator', desc: 'Compare venue costs side by side.', href: null },
 ];
 
