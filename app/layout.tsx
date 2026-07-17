@@ -3,8 +3,8 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Day of Us — Free Wedding Planning Tools",
-  description: "Free wedding budget calculator, guest RSVP, playlist uploader and planning tools for your perfect day. No sign-up needed.",
+  title: "Day of Us — Free Wedding Website & Guest Hub",
+  description: "Create a free wedding page in minutes. Guests RSVP, request songs, upload photos and leave wishes — all from one link you share. No app required.",
 };
 
 export default function RootLayout({
