@@ -53,13 +53,26 @@ interface Wish {
   message: string;
 }
 
-export default function DashboardClient({ user, wedding, rsvps, songs, photos = [], wishes = [] }: {
+interface Budget {
+  currency: string;
+  total_budget: number | null;
+  guest_count: number | null;
+  allocations: Record<string, string> | null;
+}
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$', GBP: '£', EUR: '€', AUD: 'A$', CAD: 'C$',
+  NZD: 'NZ$', SGD: 'S$', ZAR: 'R', INR: '₹', AED: 'AED',
+};
+
+export default function DashboardClient({ user, wedding, rsvps, songs, photos = [], wishes = [], budget = null }: {
   user: User;
   wedding: Wedding | null;
   rsvps: RSVP[];
   songs: Song[];
   photos?: Photo[];
   wishes?: Wish[];
+  budget?: Budget | null;
 }) {
   const [weddingDate, setWeddingDate] = useState(wedding?.wedding_date || '');
   const [venue, setVenue] = useState(wedding?.venue || '');
@@ -534,6 +547,46 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
               </div>
             ))}
           </div>
+        )}
+      </div>
+
+      {/* Budget Overview */}
+      <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
+        <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>💰 Budget Overview</h2>
+        {budget && budget.total_budget ? (
+          (() => {
+            const sym = CURRENCY_SYMBOLS[budget.currency] || '$';
+            const total = budget.total_budget || 0;
+            const allocated = Object.values(budget.allocations || {}).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
+            const remaining = total - allocated;
+            const perHead = budget.guest_count && budget.guest_count > 0 ? total / budget.guest_count : 0;
+            return (
+              <>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="rounded-xl p-4 text-center" style={{background:'linear-gradient(135deg, #2C2C3E, #B07D6E)'}}>
+                    <div className="text-xs uppercase tracking-wider mb-1" style={{color:'rgba(255,255,255,0.6)'}}>Total</div>
+                    <div className="font-serif text-xl font-bold" style={{color:'#ffffff'}}>{sym}{total.toLocaleString()}</div>
+                  </div>
+                  <div className="rounded-xl p-4 text-center" style={{background: remaining >= 0 ? '#E8F0EC' : '#FEE2E2'}}>
+                    <div className="text-xs uppercase tracking-wider mb-1" style={{color:'#6B7280'}}>{remaining >= 0 ? 'Remaining' : 'Overspent'}</div>
+                    <div className="font-serif text-xl font-bold" style={{color: remaining >= 0 ? '#7A9E8A' : '#DC2626'}}>{sym}{Math.abs(remaining).toLocaleString()}</div>
+                  </div>
+                  <div className="rounded-xl p-4 text-center" style={{background:'#F5E6C8'}}>
+                    <div className="text-xs uppercase tracking-wider mb-1" style={{color:'#6B7280'}}>Per Head</div>
+                    <div className="font-serif text-xl font-bold" style={{color:'#D4AF7A'}}>{perHead > 0 ? `${sym}${Math.round(perHead).toLocaleString()}` : '—'}</div>
+                  </div>
+                </div>
+                <Link href="/budget" className="text-sm font-semibold" style={{color:'#B07D6E'}}>Edit Budget →</Link>
+              </>
+            );
+          })()
+        ) : (
+          <>
+            <p className="text-sm mb-4" style={{color:'#6B7280'}}>You haven't set up a budget yet.</p>
+            <Link href="/budget" className="inline-block font-semibold px-5 py-2.5 rounded-xl text-sm" style={{background:'#F5EAE4', color:'#B07D6E'}}>
+              Set Up Your Budget
+            </Link>
+          </>
         )}
       </div>
 
