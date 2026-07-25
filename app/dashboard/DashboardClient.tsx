@@ -562,7 +562,7 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
             const perHead = budget.guest_count && budget.guest_count > 0 ? total / budget.guest_count : 0;
             return (
               <>
-                <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                   <div className="rounded-xl p-4 text-center" style={{background:'linear-gradient(135deg, #2C2C3E, #B07D6E)'}}>
                     <div className="text-xs uppercase tracking-wider mb-1" style={{color:'rgba(255,255,255,0.6)'}}>Total</div>
                     <div className="font-serif text-xl font-bold" style={{color:'#ffffff'}}>{sym}{total.toLocaleString()}</div>
