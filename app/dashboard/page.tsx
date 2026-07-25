@@ -40,6 +40,12 @@ export default async function DashboardPage() {
     .eq('wedding_id', wedding.id)
     .order('created_at', { ascending: false }) : { data: [] }
 
+  const { data: budget } = wedding ? await supabase
+    .from('wedding_budgets')
+    .select('*')
+    .eq('wedding_id', wedding.id)
+    .maybeSingle() : { data: null }
+
   return (
     <>
       <Header />
@@ -50,6 +56,7 @@ export default async function DashboardPage() {
         songs={songs || []}
         photos={photos || []}
         wishes={wishes || []}
+        budget={budget}
       />
     </>
   )
