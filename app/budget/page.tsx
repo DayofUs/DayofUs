@@ -1,7 +1,8 @@
 'use client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 const CURRENCIES = [
   { code: 'USD', symbol: '$', label: 'USD — US Dollar' },
@@ -40,6 +41,58 @@ export default function BudgetPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [calculated, setCalculated] = useState(false);
 
+  const [weddingId, setWeddingId] = useState<string | null>(null);
+  const [loadingAccount, setLoadingAccount] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // On mount, check if logged in and load any previously saved budget for their wedding
+  useEffect(() => {
+    const loadSavedBudget = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setLoadingAccount(false);
+        return;
+      }
+
+      const { data: wedding } = await supabase
+        .from('weddings')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!wedding) {
+        setLoadingAccount(false);
+        return;
+      }
+
+      setWeddingId(wedding.id);
+
+      const { data: savedBudget } = await supabase
+        .from('wedding_budgets')
+        .select('*')
+        .eq('wedding_id', wedding.id)
+        .maybeSingle();
+
+      if (savedBudget) {
+        const foundCurrency = CURRENCIES.find(c => c.code === savedBudget.currency);
+        if (foundCurrency) setCurrency(foundCurrency);
+        if (savedBudget.total_budget) setTotalBudget(String(savedBudget.total_budget));
+        if (savedBudget.guest_count) setGuests(String(savedBudget.guest_count));
+        if (savedBudget.allocations) {
+          setAllocations(savedBudget.allocations);
+          setCalculated(true);
+        }
+      }
+
+      setLoadingAccount(false);
+    };
+
+    loadSavedBudget();
+  }, []);
+
   const budget = parseFloat(totalBudget) || 0;
   const guestCount = parseInt(guests) || 0;
   const totalAllocated = Object.values(allocations).reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
@@ -57,6 +110,25 @@ export default function BudgetPage() {
     });
     setAllocations(newAllocations);
     setCalculated(true);
+  };
+
+  const saveBudget = async () => {
+    if (!weddingId) return;
+    setSaving(true);
+    const supabase = createClient();
+    const { error } = await supabase.from('wedding_budgets').upsert({
+      wedding_id: weddingId,
+      currency: currency.code,
+      total_budget: budget || null,
+      guest_count: guestCount || null,
+      allocations,
+      updated_at: new Date().toISOString(),
+    });
+    setSaving(false);
+    if (!error) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
   };
 
   const runAI = async () => {
@@ -88,10 +160,18 @@ export default function BudgetPage() {
       <Header />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <div className="text-center mb-10">
-          <div className="text-sm font-semibold uppercase tracking-wider mb-3" style={{color:'#B07D6E'}}>Free Tool</div>
+          <div className="text-sm font-semibold uppercase tracking-wider mb-3" style={{color:'#B07D6E'}}>
+            {weddingId ? 'Saved to Your Wedding Page' : 'Free Tool'}
+          </div>
           <h1 className="font-serif text-3xl md:text-4xl font-bold mb-4" style={{color:'#2C2C3E'}}>Wedding Budget Calculator</h1>
           <p className="max-w-xl mx-auto" style={{color:'#6B7280'}}>Set your total budget, choose your currency, and get a realistic breakdown — plus AI advice tailored to your wedding.</p>
         </div>
+
+        {!loadingAccount && !weddingId && (
+          <div className="mb-6 p-4 rounded-xl text-sm text-center" style={{background:'#FEF3C7', color:'#92400E'}}>
+            You're not signed in — this won't be saved. <a href="/login" className="font-semibold underline">Sign in</a> or <a href="/signup" className="font-semibold underline">create a free account</a> to keep your budget on your dashboard.
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8" style={{border:'1px solid #E8DDD8'}}>
           <div className="p-6" style={{background:'linear-gradient(135deg, #2C2C3E, #B07D6E)'}}>
@@ -173,6 +253,12 @@ export default function BudgetPage() {
                   <div className="font-serif text-2xl font-bold" style={{color:'#D4AF7A'}}>{perHead > 0 ? fmt(Math.round(perHead)) : '—'}</div>
                 </div>
               </div>
+            )}
+
+            {weddingId && (
+              <button onClick={saveBudget} disabled={saving} className="w-full mt-6 font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2" style={{background: saved ? '#7A9E8A' : '#B07D6E', color:'#ffffff'}}>
+                {saved ? '✓ Saved!' : saving ? 'Saving...' : 'Save Budget to My Wedding'}
+              </button>
             )}
           </div>
         </div>
