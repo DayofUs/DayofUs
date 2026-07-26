@@ -62,6 +62,7 @@ interface Budget {
 
 interface Checklist {
   checked_items: Record<string, boolean> | null;
+  custom_items: { id: string; text: string }[] | null;
 }
 
 interface Venue {
@@ -616,11 +617,12 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
           <h2 className="font-semibold text-lg mb-3" style={{color:'#2C2C3E'}}>📋 Wedding Checklist</h2>
           {(() => {
             const checkedCount = checklist?.checked_items ? Object.values(checklist.checked_items).filter(Boolean).length : 0;
-            const progress = Math.round((checkedCount / TOTAL_CHECKLIST_ITEMS) * 100);
+            const totalItems = TOTAL_CHECKLIST_ITEMS + (checklist?.custom_items?.length || 0);
+            const progress = Math.round((checkedCount / totalItems) * 100);
             return checkedCount > 0 ? (
               <>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm" style={{color:'#6B7280'}}>{checkedCount} of {TOTAL_CHECKLIST_ITEMS} done</span>
+                  <span className="text-sm" style={{color:'#6B7280'}}>{checkedCount} of {totalItems} done</span>
                   <span className="text-sm font-semibold" style={{color:'#B07D6E'}}>{progress}%</span>
                 </div>
                 <div className="h-2.5 rounded-full overflow-hidden mb-4" style={{background:'#F5EAE4'}}>
