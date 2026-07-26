@@ -60,12 +60,30 @@ interface Budget {
   allocations: Record<string, string> | null;
 }
 
+interface Checklist {
+  checked_items: Record<string, boolean> | null;
+}
+
+interface Venue {
+  name: string;
+  hireCost: string;
+  perHead: string;
+  guestCount: string;
+  extras: string;
+}
+
+interface VenueComparison {
+  venues: Venue[] | null;
+}
+
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$', GBP: '£', EUR: '€', AUD: 'A$', CAD: 'C$',
   NZD: 'NZ$', SGD: 'S$', ZAR: 'R', INR: '₹', AED: 'AED',
 };
 
-export default function DashboardClient({ user, wedding, rsvps, songs, photos = [], wishes = [], budget = null }: {
+const TOTAL_CHECKLIST_ITEMS = 32;
+
+export default function DashboardClient({ user, wedding, rsvps, songs, photos = [], wishes = [], budget = null, checklist = null, venueComparison = null }: {
   user: User;
   wedding: Wedding | null;
   rsvps: RSVP[];
@@ -73,6 +91,8 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
   photos?: Photo[];
   wishes?: Wish[];
   budget?: Budget | null;
+  checklist?: Checklist | null;
+  venueComparison?: VenueComparison | null;
 }) {
   const [weddingDate, setWeddingDate] = useState(wedding?.wedding_date || '');
   const [venue, setVenue] = useState(wedding?.venue || '');
@@ -588,6 +608,59 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
             </Link>
           </>
         )}
+      </div>
+
+      {/* Checklist & Venue Progress */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
+          <h2 className="font-semibold text-lg mb-3" style={{color:'#2C2C3E'}}>📋 Wedding Checklist</h2>
+          {(() => {
+            const checkedCount = checklist?.checked_items ? Object.values(checklist.checked_items).filter(Boolean).length : 0;
+            const progress = Math.round((checkedCount / TOTAL_CHECKLIST_ITEMS) * 100);
+            return checkedCount > 0 ? (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm" style={{color:'#6B7280'}}>{checkedCount} of {TOTAL_CHECKLIST_ITEMS} done</span>
+                  <span className="text-sm font-semibold" style={{color:'#B07D6E'}}>{progress}%</span>
+                </div>
+                <div className="h-2.5 rounded-full overflow-hidden mb-4" style={{background:'#F5EAE4'}}>
+                  <div className="h-full rounded-full" style={{width: `${progress}%`, background:'#B07D6E'}}></div>
+                </div>
+                <Link href="/checklist" className="text-sm font-semibold" style={{color:'#B07D6E'}}>Continue Checklist →</Link>
+              </>
+            ) : (
+              <>
+                <p className="text-sm mb-4" style={{color:'#6B7280'}}>You haven't started your checklist yet.</p>
+                <Link href="/checklist" className="inline-block font-semibold px-5 py-2.5 rounded-xl text-sm" style={{background:'#F5EAE4', color:'#B07D6E'}}>
+                  Start Checklist
+                </Link>
+              </>
+            );
+          })()}
+        </div>
+
+        <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
+          <h2 className="font-semibold text-lg mb-3" style={{color:'#2C2C3E'}}>🏨 Venue Comparison</h2>
+          {(() => {
+            const venuesWithNames = (venueComparison?.venues || []).filter(v => v.name && v.name.trim());
+            if (venuesWithNames.length === 0) {
+              return (
+                <>
+                  <p className="text-sm mb-4" style={{color:'#6B7280'}}>No venues compared yet.</p>
+                  <Link href="/venue" className="inline-block font-semibold px-5 py-2.5 rounded-xl text-sm" style={{background:'#F5EAE4', color:'#B07D6E'}}>
+                    Compare Venues
+                  </Link>
+                </>
+              );
+            }
+            return (
+              <>
+                <p className="text-sm mb-4" style={{color:'#6B7280'}}>{venuesWithNames.length} venue{venuesWithNames.length === 1 ? '' : 's'} compared, including <strong style={{color:'#2C2C3E'}}>{venuesWithNames[0].name}</strong>.</p>
+                <Link href="/venue" className="text-sm font-semibold" style={{color:'#B07D6E'}}>View Comparison →</Link>
+              </>
+            );
+          })()}
+        </div>
       </div>
 
       {/* Budget tool */}
