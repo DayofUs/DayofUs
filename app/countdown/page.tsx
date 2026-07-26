@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 export default function CountdownPage() {
   const [weddingDate, setWeddingDate] = useState('');
   const [coupleName, setCoupleName] = useState('');
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, years: 0, months: 0, remDays: 0 });
   const [active, setActive] = useState(false);
   const [loadingAccount, setLoadingAccount] = useState(true);
   const [isSynced, setIsSynced] = useState(false);
@@ -51,12 +51,16 @@ export default function CountdownPage() {
       const now = new Date().getTime();
       const target = new Date(weddingDate).getTime();
       const diff = target - now;
-      if (diff <= 0) { setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 }); return; }
+      if (diff <= 0) { setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, years: 0, months: 0, remDays: 0 }); return; }
+      const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
       setTimeLeft({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        days: totalDays,
         hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
         minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
         seconds: Math.floor((diff % (1000 * 60)) / 1000),
+        years: Math.floor(totalDays / 365),
+        months: Math.floor((totalDays % 365) / 30),
+        remDays: (totalDays % 365) % 30,
       });
       setActive(true);
     }, 1000);
@@ -117,16 +121,24 @@ export default function CountdownPage() {
             {active && (
               <div className="text-center">
                 {coupleName && <p className="font-serif text-xl text-[#B07D6E] mb-4 italic">{coupleName} are getting married in...</p>}
-                <div className="grid grid-cols-4 gap-3">
-                  {[
-                    { val: timeLeft.days, label: 'Days' },
-                    { val: timeLeft.hours, label: 'Hours' },
-                    { val: timeLeft.minutes, label: 'Mins' },
-                    { val: timeLeft.seconds, label: 'Secs' },
-                  ].map(({ val, label }) => (
-                    <div key={label} className="bg-[#F5EAE4] rounded-2xl p-4">
-                      <div className="font-serif text-4xl md:text-5xl font-bold text-[#B07D6E]">{String(val).padStart(2, '0')}</div>
-                      <div className="text-xs text-[#6B7280] mt-1 font-medium uppercase tracking-wider">{label}</div>
+                <div className="grid grid-cols-4 gap-2 sm:gap-3">
+                  {(timeLeft.days >= 365
+                    ? [
+                        { val: timeLeft.years, label: 'Years' },
+                        { val: timeLeft.months, label: 'Months' },
+                        { val: timeLeft.remDays, label: 'Days' },
+                        { val: timeLeft.hours, label: 'Hours' },
+                      ]
+                    : [
+                        { val: timeLeft.days, label: 'Days' },
+                        { val: timeLeft.hours, label: 'Hours' },
+                        { val: timeLeft.minutes, label: 'Mins' },
+                        { val: timeLeft.seconds, label: 'Secs' },
+                      ]
+                  ).map(({ val, label }) => (
+                    <div key={label} className="bg-[#F5EAE4] rounded-2xl p-2 sm:p-4">
+                      <div className="font-serif text-2xl sm:text-4xl md:text-5xl font-bold text-[#B07D6E]">{String(val).padStart(2, '0')}</div>
+                      <div className="text-[10px] sm:text-xs text-[#6B7280] mt-1 font-medium uppercase tracking-wide sm:tracking-wider">{label}</div>
                     </div>
                   ))}
                 </div>
