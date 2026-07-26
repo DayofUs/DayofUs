@@ -2,7 +2,8 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 interface ChecklistItem {
   id: string;
@@ -86,13 +87,65 @@ const sections: ChecklistSection[] = [
 
 export default function ChecklistPage() {
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [weddingId, setWeddingId] = useState<string | null>(null);
+  const [loadingAccount, setLoadingAccount] = useState(true);
+
+  useEffect(() => {
+    const loadSavedChecklist = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setLoadingAccount(false);
+        return;
+      }
+
+      const { data: wedding } = await supabase
+        .from('weddings')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!wedding) {
+        setLoadingAccount(false);
+        return;
+      }
+
+      setWeddingId(wedding.id);
+
+      const { data: savedChecklist } = await supabase
+        .from('wedding_checklist')
+        .select('checked_items')
+        .eq('wedding_id', wedding.id)
+        .maybeSingle();
+
+      if (savedChecklist?.checked_items) {
+        setChecked(savedChecklist.checked_items);
+      }
+
+      setLoadingAccount(false);
+    };
+
+    loadSavedChecklist();
+  }, []);
 
   const totalItems = sections.reduce((sum, s) => sum + s.items.length, 0);
   const checkedCount = Object.values(checked).filter(Boolean).length;
   const progress = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
 
   const toggle = (id: string) => {
-    setChecked(prev => ({ ...prev, [id]: !prev[id] }));
+    const updated = { ...checked, [id]: !checked[id] };
+    setChecked(updated);
+
+    // Auto-save silently in the background if signed in — no explicit save button needed
+    if (weddingId) {
+      const supabase = createClient();
+      supabase.from('wedding_checklist').upsert({
+        wedding_id: weddingId,
+        checked_items: updated,
+        updated_at: new Date().toISOString(),
+      }).then();
+    }
   };
 
   return (
@@ -103,6 +156,18 @@ export default function ChecklistPage() {
           <h1 className="font-serif text-3xl md:text-4xl font-bold mb-4" style={{color:'#2C2C3E'}}>Wedding Planning Checklist</h1>
           <p style={{color:'#6B7280'}}>A complete month-by-month checklist from a year out to the morning of your wedding. Check items off as you go.</p>
         </div>
+
+        {!loadingAccount && weddingId && (
+          <div className="mb-6 p-3 rounded-xl text-sm text-center" style={{background:'#F0FDF4', color:'#16A34A'}}>
+            ✓ Your progress saves automatically as you check things off
+          </div>
+        )}
+
+        {!loadingAccount && !weddingId && (
+          <div className="mb-6 p-4 rounded-xl text-sm text-center" style={{background:'#FEF3C7', color:'#92400E'}}>
+            You're not signed in — your progress won't be remembered. <a href="/login" className="font-semibold underline">Sign in</a> or <a href="/signup" className="font-semibold underline">create a free account</a> to save it automatically.
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
           <div className="flex items-center justify-between mb-2">
