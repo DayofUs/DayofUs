@@ -1,7 +1,9 @@
 'use client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { useState } from 'react';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 interface Track {
   trackId: number;
@@ -20,6 +22,45 @@ interface SongRequest {
 }
 
 export default function PlaylistPage() {
+  const [loadingAccount, setLoadingAccount] = useState(true);
+  const [weddingSlug, setWeddingSlug] = useState<string | null>(null);
+  const [realSongs, setRealSongs] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadRealSongs = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setLoadingAccount(false);
+        return;
+      }
+
+      const { data: wedding } = await supabase
+        .from('weddings')
+        .select('id, slug')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!wedding) {
+        setLoadingAccount(false);
+        return;
+      }
+
+      setWeddingSlug(wedding.slug);
+
+      const { data: songs } = await supabase
+        .from('song_requests')
+        .select('*')
+        .eq('wedding_id', wedding.id)
+        .order('created_at', { ascending: false });
+
+      setRealSongs(songs || []);
+      setLoadingAccount(false);
+    };
+
+    loadRealSongs();
+  }, []);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Track[]>([]);
   const [searching, setSearching] = useState(false);
@@ -62,6 +103,45 @@ export default function PlaylistPage() {
     setAdded(track.trackId);
     setTimeout(() => setAdded(null), 2000);
   };
+
+  if (!loadingAccount && weddingSlug) {
+    return (
+      <>
+        <Header />
+        <main className="max-w-3xl mx-auto px-6 py-12">
+          <div className="text-center mb-10">
+            <h1 className="font-serif text-3xl md:text-4xl font-bold mb-4" style={{color:'#2C2C3E'}}>Your Song Requests</h1>
+            <p style={{color:'#6B7280'}}>Guests add songs from your shareable guest page — here's what they've requested so far.</p>
+          </div>
+
+          <div className="mb-6 p-4 rounded-xl text-sm text-center" style={{background:'#F0FDF4', color:'#16A34A'}}>
+            Want more requests? Share your guest link: <Link href={`/w/${weddingSlug}`} className="font-semibold underline">dayofus.org/w/{weddingSlug}</Link>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-6" style={{border:'1px solid #E8DDD8'}}>
+            <h3 className="font-semibold mb-4" style={{color:'#2C2C3E'}}>Wedding Playlist ({realSongs.length} songs)</h3>
+            {realSongs.length === 0 ? (
+              <p className="text-sm" style={{color:'#6B7280'}}>No song requests yet — share your guest link above to start collecting them.</p>
+            ) : (
+              <div className="space-y-3">
+                {realSongs.map((s, i) => (
+                  <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl" style={{background:'#F5EAE4'}}>
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0" style={{background:'#B07D6E', color:'#ffffff'}}>{i + 1}</div>
+                    {s.artwork_url && <img src={s.artwork_url} alt={s.track_name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm truncate" style={{color:'#2C2C3E'}}>{s.track_name}</div>
+                      <div className="text-xs" style={{color:'#6B7280'}}>{s.artist_name} · Requested by {s.submitter || 'Anonymous'}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
