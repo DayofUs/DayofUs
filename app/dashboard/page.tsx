@@ -1,4 +1,3 @@
-
 export const dynamic = 'force-dynamic';
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -47,6 +46,18 @@ export default async function DashboardPage() {
     .eq('wedding_id', wedding.id)
     .maybeSingle() : { data: null }
 
+  const { data: checklist } = wedding ? await supabase
+    .from('wedding_checklist')
+    .select('*')
+    .eq('wedding_id', wedding.id)
+    .maybeSingle() : { data: null }
+
+  const { data: venueComparison } = wedding ? await supabase
+    .from('wedding_venues')
+    .select('*')
+    .eq('wedding_id', wedding.id)
+    .maybeSingle() : { data: null }
+
   return (
     <>
       <Header />
@@ -58,6 +69,8 @@ export default async function DashboardPage() {
         photos={photos || []}
         wishes={wishes || []}
         budget={budget}
+        checklist={checklist}
+        venueComparison={venueComparison}
       />
     </>
   )
