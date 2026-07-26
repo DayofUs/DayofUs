@@ -2,7 +2,8 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 interface Venue {
   id: string;
@@ -24,6 +25,65 @@ const emptyVenue = (): Venue => ({
 
 export default function VenuePage() {
   const [venues, setVenues] = useState<Venue[]>([emptyVenue(), emptyVenue()]);
+  const [weddingId, setWeddingId] = useState<string | null>(null);
+  const [loadingAccount, setLoadingAccount] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    const loadSavedVenues = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setLoadingAccount(false);
+        return;
+      }
+
+      const { data: wedding } = await supabase
+        .from('weddings')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!wedding) {
+        setLoadingAccount(false);
+        return;
+      }
+
+      setWeddingId(wedding.id);
+
+      const { data: savedVenues } = await supabase
+        .from('wedding_venues')
+        .select('venues')
+        .eq('wedding_id', wedding.id)
+        .maybeSingle();
+
+      if (savedVenues?.venues && Array.isArray(savedVenues.venues) && savedVenues.venues.length > 0) {
+        setVenues(savedVenues.venues);
+      }
+
+      setLoadingAccount(false);
+    };
+
+    loadSavedVenues();
+  }, []);
+
+  const saveVenues = async () => {
+    if (!weddingId) return;
+    setSaving(true);
+    const supabase = createClient();
+    const { error } = await supabase.from('wedding_venues').upsert({
+      wedding_id: weddingId,
+      venues,
+      updated_at: new Date().toISOString(),
+    });
+    setSaving(false);
+    if (!error) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+  };
 
   const updateVenue = (id: string, field: keyof Venue, value: string) => {
     setVenues(prev => prev.map(v => v.id === id ? { ...v, [field]: value } : v));
@@ -66,6 +126,12 @@ export default function VenuePage() {
           <h1 className="font-serif text-3xl md:text-4xl font-bold mb-4" style={{color:'#2C2C3E'}}>Venue Cost Calculator</h1>
           <p style={{color:'#6B7280'}}>Compare venues side by side and see the true total cost — including catering, drinks and extras — not just the headline hire fee.</p>
         </div>
+
+        {!loadingAccount && !weddingId && (
+          <div className="mb-6 p-4 rounded-xl text-sm text-center" style={{background:'#FEF3C7', color:'#92400E'}}>
+            You're not signed in — this won't be saved. <a href="/login" className="font-semibold underline">Sign in</a> or <a href="/signup" className="font-semibold underline">create a free account</a> to keep your comparison on your dashboard.
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {venues.map((v) => {
@@ -123,6 +189,12 @@ export default function VenuePage() {
         {venues.length < 4 && (
           <button onClick={addVenue} className="w-full mb-10 py-3.5 rounded-xl font-semibold text-sm" style={{background:'#F5EAE4', color:'#B07D6E', border:'1px dashed #B07D6E'}}>
             + Add Another Venue to Compare
+          </button>
+        )}
+
+        {weddingId && (
+          <button onClick={saveVenues} disabled={saving} className="w-full mb-10 py-3.5 rounded-xl font-semibold disabled:opacity-40 flex items-center justify-center gap-2" style={{background: saved ? '#7A9E8A' : '#B07D6E', color:'#ffffff'}}>
+            {saved ? '✓ Saved!' : saving ? 'Saving...' : 'Save Comparison to My Wedding'}
           </button>
         )}
 
