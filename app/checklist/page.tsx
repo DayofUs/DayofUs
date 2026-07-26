@@ -87,6 +87,8 @@ const sections: ChecklistSection[] = [
 
 export default function ChecklistPage() {
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [customItems, setCustomItems] = useState<ChecklistItem[]>([]);
+  const [newItemText, setNewItemText] = useState('');
   const [weddingId, setWeddingId] = useState<string | null>(null);
   const [loadingAccount, setLoadingAccount] = useState(true);
 
@@ -115,12 +117,15 @@ export default function ChecklistPage() {
 
       const { data: savedChecklist } = await supabase
         .from('wedding_checklist')
-        .select('checked_items')
+        .select('checked_items, custom_items')
         .eq('wedding_id', wedding.id)
         .maybeSingle();
 
       if (savedChecklist?.checked_items) {
         setChecked(savedChecklist.checked_items);
+      }
+      if (savedChecklist?.custom_items && Array.isArray(savedChecklist.custom_items)) {
+        setCustomItems(savedChecklist.custom_items);
       }
 
       setLoadingAccount(false);
@@ -129,7 +134,7 @@ export default function ChecklistPage() {
     loadSavedChecklist();
   }, []);
 
-  const totalItems = sections.reduce((sum, s) => sum + s.items.length, 0);
+  const totalItems = sections.reduce((sum, s) => sum + s.items.length, 0) + customItems.length;
   const checkedCount = Object.values(checked).filter(Boolean).length;
   const progress = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
 
@@ -143,6 +148,43 @@ export default function ChecklistPage() {
       supabase.from('wedding_checklist').upsert({
         wedding_id: weddingId,
         checked_items: updated,
+        custom_items: customItems,
+        updated_at: new Date().toISOString(),
+      }).then();
+    }
+  };
+
+  const addCustomItem = () => {
+    if (!newItemText.trim()) return;
+    const newItem = { id: `custom-${Date.now()}`, text: newItemText.trim() };
+    const updated = [...customItems, newItem];
+    setCustomItems(updated);
+    setNewItemText('');
+
+    if (weddingId) {
+      const supabase = createClient();
+      supabase.from('wedding_checklist').upsert({
+        wedding_id: weddingId,
+        checked_items: checked,
+        custom_items: updated,
+        updated_at: new Date().toISOString(),
+      }).then();
+    }
+  };
+
+  const removeCustomItem = (id: string) => {
+    const updated = customItems.filter(item => item.id !== id);
+    setCustomItems(updated);
+    const updatedChecked = { ...checked };
+    delete updatedChecked[id];
+    setChecked(updatedChecked);
+
+    if (weddingId) {
+      const supabase = createClient();
+      supabase.from('wedding_checklist').upsert({
+        wedding_id: weddingId,
+        checked_items: updatedChecked,
+        custom_items: updated,
         updated_at: new Date().toISOString(),
       }).then();
     }
@@ -201,16 +243,57 @@ export default function ChecklistPage() {
               </div>
             </div>
           ))}
+
+          <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
+            <h2 className="font-serif text-xl font-bold mb-4" style={{color:'#2C2C3E'}}>Your Own Tasks</h2>
+            <div className="space-y-2 mb-4">
+              {customItems.map(item => (
+                <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl" style={{background: checked[item.id] ? '#F0FDF4' : '#F8FAFC'}}>
+                  <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!!checked[item.id]}
+                      onChange={() => toggle(item.id)}
+                      className="w-5 h-5 rounded flex-shrink-0"
+                      style={{accentColor: '#7A9E8A'}}
+                    />
+                    <span className="text-sm truncate" style={{color: checked[item.id] ? '#16A34A' : '#2C2C3E', textDecoration: checked[item.id] ? 'line-through' : 'none'}}>
+                      {item.text}
+                    </span>
+                  </label>
+                  <button onClick={() => removeCustomItem(item.id)} className="flex-shrink-0 text-xs" style={{color:'#DC2626'}}>Remove</button>
+                </div>
+              ))}
+              {customItems.length === 0 && (
+                <p className="text-sm" style={{color:'#6B7280'}}>Add anything specific to your wedding that isn't already on the list.</p>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                value={newItemText}
+                onChange={e => setNewItemText(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addCustomItem()}
+                placeholder="e.g. Book hair trial"
+                className="flex-1 h-11 px-4 rounded-xl outline-none text-sm min-w-0"
+                style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
+              />
+              <button onClick={addCustomItem} disabled={!newItemText.trim()} className="w-full sm:w-auto px-5 h-11 rounded-xl font-semibold text-sm disabled:opacity-40 flex-shrink-0" style={{background:'#B07D6E', color:'#ffffff'}}>
+                + Add Task
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-10 text-center bg-white rounded-2xl p-8" style={{border:'1px solid #E8DDD8'}}>
-          <div className="text-3xl mb-4">💍</div>
-          <h3 className="font-serif text-2xl font-bold mb-2" style={{color:'#2C2C3E'}}>Keep It All in One Place</h3>
-          <p className="text-sm mb-6" style={{color:'#6B7280'}}>Create a free wedding page to track your budget, RSVPs, and countdown alongside this checklist.</p>
-          <Link href="/signup" className="inline-block font-semibold px-8 py-4 rounded-full" style={{background:'#B07D6E', color:'#ffffff'}}>
-            Create Your Free Wedding Page
-          </Link>
-        </div>
+        {!weddingId && (
+          <div className="mt-10 text-center bg-white rounded-2xl p-8" style={{border:'1px solid #E8DDD8'}}>
+            <div className="text-3xl mb-4">💍</div>
+            <h3 className="font-serif text-2xl font-bold mb-2" style={{color:'#2C2C3E'}}>Keep It All in One Place</h3>
+            <p className="text-sm mb-6" style={{color:'#6B7280'}}>Create a free wedding page to track your budget, RSVPs, and countdown alongside this checklist.</p>
+            <Link href="/signup" className="inline-block font-semibold px-8 py-4 rounded-full" style={{background:'#B07D6E', color:'#ffffff'}}>
+              Create Your Free Wedding Page
+            </Link>
+          </div>
+        )}
       </main>
       <Footer />
     </>
