@@ -143,16 +143,28 @@ export default function VenuePage() {
                 {isCheapest && (
                   <span className="absolute -top-3 left-6 text-xs font-semibold px-3 py-1 rounded-full" style={{background:'#7A9E8A', color:'#ffffff'}}>Best Value</span>
                 )}
-                {venues.length > 1 && (
-                  <button onClick={() => removeVenue(v.id)} className="absolute top-4 right-4 text-xs" style={{color:'#DC2626'}}>Remove</button>
+                {venues.length > 1 ? (
+                  <div className="flex items-center gap-2 mb-4">
+                    <input
+                      value={v.name}
+                      onChange={e => updateVenue(v.id, 'name', e.target.value)}
+                      placeholder="Venue name"
+                      className="flex-1 h-12 px-4 rounded-xl outline-none font-semibold min-w-0"
+                      style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
+                    />
+                    <button onClick={() => removeVenue(v.id)} className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg" style={{color:'#DC2626', background:'#FEF2F2'}}>
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <input
+                    value={v.name}
+                    onChange={e => updateVenue(v.id, 'name', e.target.value)}
+                    placeholder="Venue name"
+                    className="w-full h-12 px-4 rounded-xl outline-none font-semibold mb-4"
+                    style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
+                  />
                 )}
-                <input
-                  value={v.name}
-                  onChange={e => updateVenue(v.id, 'name', e.target.value)}
-                  placeholder="Venue name"
-                  className="w-full h-12 px-4 rounded-xl outline-none font-semibold mb-4"
-                  style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
-                />
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
                     <label className="block text-xs font-semibold mb-1" style={{color:'#475569'}}>Venue Hire ($)</label>
@@ -198,14 +210,16 @@ export default function VenuePage() {
           </button>
         )}
 
-        <div className="text-center bg-white rounded-2xl p-8" style={{border:'1px solid #E8DDD8'}}>
-          <div className="text-3xl mb-4">🏨</div>
-          <h3 className="font-serif text-2xl font-bold mb-2" style={{color:'#2C2C3E'}}>Track Your Whole Budget</h3>
-          <p className="text-sm mb-6" style={{color:'#6B7280'}}>Once you've picked a venue, plan every other category of your wedding spend with our full budget planner.</p>
-          <Link href="/signup" className="inline-block font-semibold px-8 py-4 rounded-full" style={{background:'#B07D6E', color:'#ffffff'}}>
-            Create Your Free Wedding Page
-          </Link>
-        </div>
+        {!weddingId && (
+          <div className="text-center bg-white rounded-2xl p-8" style={{border:'1px solid #E8DDD8'}}>
+            <div className="text-3xl mb-4">🏨</div>
+            <h3 className="font-serif text-2xl font-bold mb-2" style={{color:'#2C2C3E'}}>Track Your Whole Budget</h3>
+            <p className="text-sm mb-6" style={{color:'#6B7280'}}>Once you've picked a venue, plan every other category of your wedding spend with our full budget planner.</p>
+            <Link href="/signup" className="inline-block font-semibold px-8 py-4 rounded-full" style={{background:'#B07D6E', color:'#ffffff'}}>
+              Create Your Free Wedding Page
+            </Link>
+          </div>
+        )}
       </main>
       <Footer />
     </>
