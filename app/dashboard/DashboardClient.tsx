@@ -294,6 +294,13 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
         doc.setTextColor(44, 44, 62);
         doc.text(`${r.guest_name}  —  ${r.guests} guest${r.guests === 1 ? '' : 's'}`, 20, y);
         y += 6;
+        if (r.meal_choice) {
+          doc.setFontSize(9);
+          doc.setTextColor(107, 114, 128);
+          doc.text(`Meal: ${r.meal_choice}`, 24, y);
+          doc.setFontSize(10);
+          y += 6;
+        }
         if (r.dietary) {
           doc.setFontSize(9);
           doc.setTextColor(107, 114, 128);
