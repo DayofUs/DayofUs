@@ -77,6 +77,12 @@ interface VenueComparison {
   venues: Venue[] | null;
 }
 
+interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+}
+
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$', GBP: '£', EUR: '€', AUD: 'A$', CAD: 'C$',
   NZD: 'NZ$', SGD: 'S$', ZAR: 'R', INR: '₹', AED: 'AED',
@@ -84,7 +90,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 const TOTAL_CHECKLIST_ITEMS = 32;
 
-export default function DashboardClient({ user, wedding, rsvps, songs, photos = [], wishes = [], budget = null, checklist = null, venueComparison = null }: {
+export default function DashboardClient({ user, wedding, rsvps, songs, photos = [], wishes = [], budget = null, checklist = null, venueComparison = null, faqs = [] }: {
   user: User;
   wedding: Wedding | null;
   rsvps: RSVP[];
@@ -94,6 +100,7 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
   budget?: Budget | null;
   checklist?: Checklist | null;
   venueComparison?: VenueComparison | null;
+  faqs?: FAQ[];
 }) {
   const [weddingDate, setWeddingDate] = useState(wedding?.wedding_date || '');
   const [venue, setVenue] = useState(wedding?.venue || '');
@@ -107,6 +114,10 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
   const [slugSaving, setSlugSaving] = useState(false);
   const [slugSaved, setSlugSaved] = useState(false);
   const [slugError, setSlugError] = useState('');
+  const [faqList, setFaqList] = useState<FAQ[]>(faqs);
+  const [newQuestion, setNewQuestion] = useState('');
+  const [newAnswer, setNewAnswer] = useState('');
+  const [addingFaq, setAddingFaq] = useState(false);
   const router = useRouter();
 
   const coupleName = wedding ? `${wedding.partner1_name} & ${wedding.partner2_name}` : 'Your Wedding';
@@ -200,6 +211,29 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
     setSlugSaving(false);
     setSlugSaved(true);
     setTimeout(() => { setSlugSaved(false); router.refresh(); }, 1500);
+  };
+
+  const addFaq = async () => {
+    if (!wedding || !newQuestion.trim() || !newAnswer.trim()) return;
+    setAddingFaq(true);
+    const supabase = createClient();
+    const { data, error } = await supabase.from('wedding_faqs').insert({
+      wedding_id: wedding.id,
+      question: newQuestion.trim(),
+      answer: newAnswer.trim(),
+    }).select().single();
+    if (!error && data) {
+      setFaqList(prev => [...prev, data]);
+      setNewQuestion('');
+      setNewAnswer('');
+    }
+    setAddingFaq(false);
+  };
+
+  const removeFaq = async (id: string) => {
+    const supabase = createClient();
+    await supabase.from('wedding_faqs').delete().eq('id', id);
+    setFaqList(prev => prev.filter(f => f.id !== id));
   };
 
   const exportPDF = () => {
@@ -569,6 +603,49 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
             ))}
           </div>
         )}
+      </div>
+
+      {/* Guest FAQ */}
+      <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
+        <h2 className="font-semibold text-lg mb-1" style={{color:'#2C2C3E'}}>❓ Guest FAQ</h2>
+        <p className="text-sm mb-4" style={{color:'#6B7280'}}>Answer common questions once — parking, dress code, plus-ones — so guests stop asking you directly.</p>
+
+        {faqList.length > 0 && (
+          <div className="space-y-3 mb-4">
+            {faqList.map(f => (
+              <div key={f.id} className="p-4 rounded-xl" style={{background:'#F8FAFC', border:'1px solid #E8DDD8'}}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm mb-1" style={{color:'#2C2C3E'}}>{f.question}</div>
+                    <div className="text-sm" style={{color:'#6B7280'}}>{f.answer}</div>
+                  </div>
+                  <button onClick={() => removeFaq(f.id)} className="text-xs flex-shrink-0" style={{color:'#DC2626'}}>Remove</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <input
+            value={newQuestion}
+            onChange={e => setNewQuestion(e.target.value)}
+            placeholder="e.g. Is there parking at the venue?"
+            className="w-full h-11 px-4 rounded-xl outline-none text-sm"
+            style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
+          />
+          <textarea
+            value={newAnswer}
+            onChange={e => setNewAnswer(e.target.value)}
+            placeholder="e.g. Yes, free parking is available on-site."
+            rows={2}
+            className="w-full px-4 py-3 rounded-xl outline-none text-sm resize-none"
+            style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
+          />
+          <button onClick={addFaq} disabled={addingFaq || !newQuestion.trim() || !newAnswer.trim()} className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40" style={{background:'#B07D6E', color:'#ffffff'}}>
+            {addingFaq ? 'Adding...' : '+ Add Question'}
+          </button>
+        </div>
       </div>
 
       {/* Budget Overview */}
