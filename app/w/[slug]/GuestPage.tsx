@@ -13,6 +13,7 @@ interface Wedding {
   message: string | null;
   slug: string;
   is_premium?: boolean | null;
+  meal_options?: string[] | null;
 }
 
 interface RSVP {
@@ -66,6 +67,7 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
   const [attending, setAttending] = useState('');
   const [guestCount, setGuestCount] = useState('1');
   const [dietary, setDietary] = useState('');
+  const [mealChoice, setMealChoice] = useState('');
   const [guestMessage, setGuestMessage] = useState('');
   const [rsvpLoading, setRsvpLoading] = useState(false);
   const [rsvpDone, setRsvpDone] = useState(false);
@@ -120,6 +122,7 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
       attending,
       guests: parseInt(guestCount),
       dietary: dietary || null,
+      meal_choice: mealChoice || null,
       message: guestMessage || null,
     });
     if (error) { setRsvpError('Something went wrong. Please try again.'); setRsvpLoading(false); return; }
@@ -325,6 +328,15 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
                           {['1','2','3','4'].map(n => <option key={n} value={n}>{n} {n === '1' ? 'guest' : 'guests'}</option>)}
                         </select>
                       </div>
+                      {wedding.meal_options && wedding.meal_options.length > 0 && (
+                        <div>
+                          <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Meal Choice</label>
+                          <select value={mealChoice} onChange={e => setMealChoice(e.target.value)} className="w-full h-12 px-4 rounded-xl outline-none appearance-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}>
+                            <option value="">Select a meal...</option>
+                            {wedding.meal_options.map(option => <option key={option} value={option}>{option}</option>)}
+                          </select>
+                        </div>
+                      )}
                       <div>
                         <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Dietary requirements (optional)</label>
                         <input value={dietary} onChange={e => setDietary(e.target.value)} placeholder="e.g. vegetarian, nut allergy..." className="w-full h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
