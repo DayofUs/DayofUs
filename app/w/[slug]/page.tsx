@@ -38,11 +38,17 @@ export default async function WeddingGuestPage({ params }: { params: Promise<{ s
     .eq('wedding_id', wedding.id)
     .order('created_at', { ascending: false })
 
+  const { data: faqs } = await supabase
+    .from('wedding_faqs')
+    .select('*')
+    .eq('wedding_id', wedding.id)
+    .order('created_at', { ascending: true })
+
   const FREE_GUEST_LIMIT = 75
   const confirmedGuestCount = (rsvps || [])
     .filter(r => r.attending === 'yes')
     .reduce((sum, r) => sum + (r.guests || 1), 0)
   const guestLimitReached = !wedding.is_premium && confirmedGuestCount >= FREE_GUEST_LIMIT
 
-  return <GuestPage wedding={wedding} rsvps={rsvps || []} songs={songs || []} photos={photos || []} wishes={wishes || []} guestLimitReached={guestLimitReached} />
+  return <GuestPage wedding={wedding} rsvps={rsvps || []} songs={songs || []} photos={photos || []} wishes={wishes || []} guestLimitReached={guestLimitReached} faqs={faqs || []} />
 }
