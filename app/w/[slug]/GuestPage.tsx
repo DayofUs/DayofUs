@@ -43,6 +43,12 @@ interface Wish {
   created_at?: string;
 }
 
+interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+}
+
 interface Track {
   trackId: number;
   trackName: string;
@@ -52,7 +58,7 @@ interface Track {
   collectionName: string;
 }
 
-export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes = [], guestLimitReached = false }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[]; photos?: Photo[]; wishes?: Wish[]; guestLimitReached?: boolean }) {
+export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes = [], guestLimitReached = false, faqs = [] }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[]; photos?: Photo[]; wishes?: Wish[]; guestLimitReached?: boolean; faqs?: FAQ[] }) {
   const [tab, setTab] = useState<'info' | 'rsvp' | 'playlist' | 'photos' | 'wishes'>('info');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, years: 0, months: 0, remDays: 0 });
 
@@ -263,6 +269,19 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
                 <button onClick={() => setTab('playlist')} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{background:'#F5EAE4', color:'#B07D6E'}}>Request a Song</button>
               </div>
             </div>
+            {faqs.length > 0 && (
+              <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
+                <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>❓ Frequently Asked Questions</h2>
+                <div className="space-y-3">
+                  {faqs.map(f => (
+                    <div key={f.id} className="p-4 rounded-xl" style={{background:'#F8FAFC'}}>
+                      <div className="font-semibold text-sm mb-1" style={{color:'#2C2C3E'}}>{f.question}</div>
+                      <div className="text-sm" style={{color:'#6B7280'}}>{f.answer}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
