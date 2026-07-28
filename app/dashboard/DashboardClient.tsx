@@ -17,6 +17,7 @@ interface Wedding {
   venue: string | null;
   message: string | null;
   is_premium?: boolean | null;
+  meal_options?: string[] | null;
 }
 
 interface User {
@@ -31,6 +32,7 @@ interface RSVP {
   guests: number;
   dietary: string | null;
   message: string | null;
+  meal_choice: string | null;
 }
 
 interface Song {
@@ -105,6 +107,8 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
   const [weddingDate, setWeddingDate] = useState(wedding?.wedding_date || '');
   const [venue, setVenue] = useState(wedding?.venue || '');
   const [message, setMessage] = useState(wedding?.message || '');
+  const [mealOptions, setMealOptions] = useState<string[]>(wedding?.meal_options || []);
+  const [newMealOption, setNewMealOption] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -136,10 +140,21 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
       wedding_date: weddingDate || null,
       venue: venue || null,
       message: message || null,
+      meal_options: mealOptions,
     }).eq('id', wedding.id);
     setSaving(false);
     setSaved(true);
     setTimeout(() => { setSaved(false); router.refresh(); }, 2000);
+  };
+
+  const addMealOption = () => {
+    if (!newMealOption.trim() || mealOptions.includes(newMealOption.trim())) return;
+    setMealOptions(prev => [...prev, newMealOption.trim()]);
+    setNewMealOption('');
+  };
+
+  const removeMealOption = (option: string) => {
+    setMealOptions(prev => prev.filter(o => o !== option));
   };
 
   const copyLink = () => {
@@ -482,6 +497,33 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
             <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Message to guests</label>
             <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="e.g. We are so excited to celebrate with you all..." rows={3} className="w-full px-4 py-3 rounded-xl outline-none resize-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
           </div>
+          <div>
+            <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Meal Options (optional)</label>
+            <p className="text-xs mb-2" style={{color:'#6B7280'}}>Add meal choices and guests will pick one when they RSVP as attending.</p>
+            {mealOptions.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {mealOptions.map(option => (
+                  <span key={option} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm" style={{background:'#F5EAE4', color:'#B07D6E'}}>
+                    {option}
+                    <button onClick={() => removeMealOption(option)} style={{color:'#DC2626'}}>×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <input
+                value={newMealOption}
+                onChange={e => setNewMealOption(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addMealOption())}
+                placeholder="e.g. Chicken"
+                className="flex-1 h-11 px-4 rounded-xl outline-none text-sm min-w-0"
+                style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
+              />
+              <button onClick={addMealOption} disabled={!newMealOption.trim()} className="px-4 h-11 rounded-xl font-semibold text-sm disabled:opacity-40 flex-shrink-0" style={{background:'#F5EAE4', color:'#B07D6E'}}>
+                + Add
+              </button>
+            </div>
+          </div>
           <button onClick={saveDetails} disabled={saving} className="w-full font-semibold py-3 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2" style={{background: saved ? '#7A9E8A' : '#B07D6E', color:'#ffffff'}}>
             {saved ? '✓ Saved!' : saving ? 'Saving...' : 'Save Details'}
           </button>
@@ -521,6 +563,7 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
                     <div key={r.id} className="flex items-center justify-between p-3 rounded-xl" style={{background:'#F0FDF4', border:'1px solid #BBF7D0'}}>
                       <div>
                         <div className="font-medium text-sm" style={{color:'#2C2C3E'}}>{r.guest_name}</div>
+                        {r.meal_choice && <div className="text-xs" style={{color:'#6B7280'}}>Meal: {r.meal_choice}</div>}
                         {r.dietary && <div className="text-xs" style={{color:'#6B7280'}}>Dietary: {r.dietary}</div>}
                         {r.message && <div className="text-xs italic mt-1" style={{color:'#6B7280'}}>"{r.message}"</div>}
                       </div>
