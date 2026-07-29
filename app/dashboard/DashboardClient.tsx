@@ -85,6 +85,14 @@ interface FAQ {
   answer: string;
 }
 
+interface PartyMember {
+  id: string;
+  name: string;
+  role: string;
+  bio: string | null;
+  photo_url: string | null;
+}
+
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$', GBP: '£', EUR: '€', AUD: 'A$', CAD: 'C$',
   NZD: 'NZ$', SGD: 'S$', ZAR: 'R', INR: '₹', AED: 'AED',
@@ -92,7 +100,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 const TOTAL_CHECKLIST_ITEMS = 32;
 
-export default function DashboardClient({ user, wedding, rsvps, songs, photos = [], wishes = [], budget = null, checklist = null, venueComparison = null, faqs = [] }: {
+export default function DashboardClient({ user, wedding, rsvps, songs, photos = [], wishes = [], budget = null, checklist = null, venueComparison = null, faqs = [], weddingParty = [] }: {
   user: User;
   wedding: Wedding | null;
   rsvps: RSVP[];
@@ -103,6 +111,7 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
   checklist?: Checklist | null;
   venueComparison?: VenueComparison | null;
   faqs?: FAQ[];
+  weddingParty?: PartyMember[];
 }) {
   const [weddingDate, setWeddingDate] = useState(wedding?.wedding_date || '');
   const [venue, setVenue] = useState(wedding?.venue || '');
@@ -122,6 +131,13 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
   const [newQuestion, setNewQuestion] = useState('');
   const [newAnswer, setNewAnswer] = useState('');
   const [addingFaq, setAddingFaq] = useState(false);
+  const [partyList, setPartyList] = useState<PartyMember[]>(weddingParty);
+  const [newPartyName, setNewPartyName] = useState('');
+  const [newPartyRole, setNewPartyRole] = useState('');
+  const [newPartyBio, setNewPartyBio] = useState('');
+  const [newPartyPhoto, setNewPartyPhoto] = useState<File | null>(null);
+  const [newPartyPhotoPreview, setNewPartyPhotoPreview] = useState<string | null>(null);
+  const [addingParty, setAddingParty] = useState(false);
   const router = useRouter();
 
   const coupleName = wedding ? `${wedding.partner1_name} & ${wedding.partner2_name}` : 'Your Wedding';
@@ -249,6 +265,54 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
     const supabase = createClient();
     await supabase.from('wedding_faqs').delete().eq('id', id);
     setFaqList(prev => prev.filter(f => f.id !== id));
+  };
+
+  const handlePartyPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setNewPartyPhoto(file);
+    setNewPartyPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const addPartyMember = async () => {
+    if (!wedding || !newPartyName.trim() || !newPartyRole.trim()) return;
+    setAddingParty(true);
+    const supabase = createClient();
+
+    let photoUrl: string | null = null;
+    if (newPartyPhoto) {
+      const fileExt = newPartyPhoto.name.split('.').pop();
+      const filePath = `party/${wedding.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('wedding-photos').upload(filePath, newPartyPhoto);
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from('wedding-photos').getPublicUrl(filePath);
+        photoUrl = urlData.publicUrl;
+      }
+    }
+
+    const { data, error } = await supabase.from('wedding_party').insert({
+      wedding_id: wedding.id,
+      name: newPartyName.trim(),
+      role: newPartyRole.trim(),
+      bio: newPartyBio.trim() || null,
+      photo_url: photoUrl,
+    }).select().single();
+
+    if (!error && data) {
+      setPartyList(prev => [...prev, data]);
+      setNewPartyName('');
+      setNewPartyRole('');
+      setNewPartyBio('');
+      setNewPartyPhoto(null);
+      setNewPartyPhotoPreview(null);
+    }
+    setAddingParty(false);
+  };
+
+  const removePartyMember = async (id: string) => {
+    const supabase = createClient();
+    await supabase.from('wedding_party').delete().eq('id', id);
+    setPartyList(prev => prev.filter(p => p.id !== id));
   };
 
   const exportPDF = () => {
@@ -695,6 +759,73 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
           <button onClick={addFaq} disabled={addingFaq || !newQuestion.trim() || !newAnswer.trim()} className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40" style={{background:'#B07D6E', color:'#ffffff'}}>
             {addingFaq ? 'Adding...' : '+ Add Question'}
           </button>
+        </div>
+      </div>
+
+      {/* Wedding Party */}
+      <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
+        <h2 className="font-semibold text-lg mb-1" style={{color:'#2C2C3E'}}>👰🤵 Wedding Party</h2>
+        <p className="text-sm mb-4" style={{color:'#6B7280'}}>Introduce your bridesmaids, groomsmen, and anyone else standing up with you.</p>
+
+        {partyList.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            {partyList.map(p => (
+              <div key={p.id} className="flex items-start gap-3 p-3 rounded-xl" style={{background:'#F8FAFC', border:'1px solid #E8DDD8'}}>
+                {p.photo_url ? (
+                  <img src={p.photo_url} alt={p.name} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl flex-shrink-0" style={{background:'#F5EAE4'}}>👤</div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm" style={{color:'#2C2C3E'}}>{p.name}</div>
+                  <div className="text-xs mb-1" style={{color:'#B07D6E'}}>{p.role}</div>
+                  {p.bio && <div className="text-xs" style={{color:'#6B7280'}}>{p.bio}</div>}
+                </div>
+                <button onClick={() => removePartyMember(p.id)} className="text-xs flex-shrink-0" style={{color:'#DC2626'}}>Remove</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="space-y-3 p-4 rounded-xl" style={{background:'#FDFAF7', border:'1px dashed #E8DDD8'}}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              value={newPartyName}
+              onChange={e => setNewPartyName(e.target.value)}
+              placeholder="Name"
+              className="w-full h-11 px-4 rounded-xl outline-none text-sm"
+              style={{border:'1px solid #E8DDD8', background:'#ffffff', color:'#2C2C3E'}}
+            />
+            <input
+              value={newPartyRole}
+              onChange={e => setNewPartyRole(e.target.value)}
+              placeholder="Role (e.g. Maid of Honor)"
+              className="w-full h-11 px-4 rounded-xl outline-none text-sm"
+              style={{border:'1px solid #E8DDD8', background:'#ffffff', color:'#2C2C3E'}}
+            />
+          </div>
+          <textarea
+            value={newPartyBio}
+            onChange={e => setNewPartyBio(e.target.value)}
+            placeholder="Short bio or fun fact (optional)"
+            rows={2}
+            className="w-full px-4 py-3 rounded-xl outline-none text-sm resize-none"
+            style={{border:'1px solid #E8DDD8', background:'#ffffff', color:'#2C2C3E'}}
+          />
+          <div className="flex items-center gap-3">
+            {newPartyPhotoPreview ? (
+              <img src={newPartyPhotoPreview} alt="Preview" className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+            ) : (
+              <label className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center cursor-pointer text-lg" style={{background:'#F5EAE4', color:'#B07D6E'}}>
+                📷
+                <input type="file" accept="image/*" onChange={handlePartyPhotoSelect} className="hidden" />
+              </label>
+            )}
+            <span className="text-xs" style={{color:'#6B7280'}}>Photo (optional)</span>
+            <button onClick={addPartyMember} disabled={addingParty || !newPartyName.trim() || !newPartyRole.trim()} className="ml-auto px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40" style={{background:'#B07D6E', color:'#ffffff'}}>
+              {addingParty ? 'Adding...' : '+ Add'}
+            </button>
+          </div>
         </div>
       </div>
 
