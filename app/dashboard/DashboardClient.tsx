@@ -1059,4 +1059,3 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
     </main>
   );
 }
-
