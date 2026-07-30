@@ -70,6 +70,12 @@ export default async function DashboardPage() {
     .eq('wedding_id', wedding.id)
     .order('created_at', { ascending: true }) : { data: [] }
 
+  const { data: registryLinks } = wedding ? await supabase
+    .from('wedding_registry_links')
+    .select('*')
+    .eq('wedding_id', wedding.id)
+    .order('created_at', { ascending: true }) : { data: [] }
+
   return (
     <>
       <Header />
@@ -85,6 +91,7 @@ export default async function DashboardPage() {
         venueComparison={venueComparison}
         faqs={faqs || []}
         weddingParty={weddingParty || []}
+        registryLinks={registryLinks || []}
       />
     </>
   )
