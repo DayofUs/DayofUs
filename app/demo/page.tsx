@@ -90,6 +90,40 @@ export default function DemoPage() {
                 <p className="text-xs font-semibold" style={{color:'#B07D6E'}}>— Aunt Carol</p>
               </div>
             </div>
+
+            <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
+              <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>👰🤵 Wedding Party</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  ['Maya Chen', 'Maid of Honor', "Sarah's best friend since college — expect a speech with at least one embarrassing story."],
+                  ['Jordan Reid', 'Best Man', "James's brother and partner in crime for two decades."],
+                ].map(([name, role, bio]) => (
+                  <div key={name} className="flex items-start gap-3 p-3 rounded-xl" style={{background:'#F8FAFC'}}>
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl flex-shrink-0" style={{background:'#F5EAE4'}}>👤</div>
+                    <div>
+                      <div className="font-semibold text-sm" style={{color:'#2C2C3E'}}>{name}</div>
+                      <div className="text-xs mb-1" style={{color:'#B07D6E'}}>{role}</div>
+                      <div className="text-xs" style={{color:'#6B7280'}}>{bio}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
+              <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>❓ Frequently Asked Questions</h2>
+              <div className="space-y-3">
+                {[
+                  ['Is there parking at the venue?', 'Yes, free parking is available on-site for all guests.'],
+                  ['What should I wear?', 'Semi-formal — think garden party, not black tie.'],
+                ].map(([q, a]) => (
+                  <div key={q} className="p-4 rounded-xl" style={{background:'#F8FAFC'}}>
+                    <div className="font-semibold text-sm mb-1" style={{color:'#2C2C3E'}}>{q}</div>
+                    <div className="text-sm" style={{color:'#6B7280'}}>{a}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="text-center">
@@ -103,3 +137,4 @@ export default function DemoPage() {
     </>
   );
 }
+
