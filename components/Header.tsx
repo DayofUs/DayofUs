@@ -24,7 +24,7 @@ export default function Header() {
     <header className="border-b sticky top-0 z-50" style={{background:'#FDFAF7', borderColor:'#E8DDD8'}}>
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl">💍</span>
+          <img src="/header-icon.png" alt="Day of Us" className="w-8 h-8" />
           <span className="font-serif text-xl font-bold" style={{color:'#2C2C3E'}}>Day of Us</span>
         </Link>
 
