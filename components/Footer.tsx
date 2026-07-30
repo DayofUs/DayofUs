@@ -27,6 +27,7 @@ export default function Footer() {
               <li><Link href="/countdown" className="hover:text-white transition-colors">Wedding Countdown</Link></li>
               <li><Link href="/rsvp" className="hover:text-white transition-colors">Guest RSVP</Link></li>
               <li><Link href="/playlist" className="hover:text-white transition-colors">Song Requests</Link></li>
+              <li><Link href="/guides/wedding-budget-breakdown" className="hover:text-white transition-colors">Wedding Budget Breakdown Guide</Link></li>
             </ul>
           </div>
           <div>
