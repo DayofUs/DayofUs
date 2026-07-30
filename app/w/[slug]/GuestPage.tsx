@@ -58,6 +58,12 @@ interface PartyMember {
   photo_url: string | null;
 }
 
+interface RegistryLink {
+  id: string;
+  label: string;
+  url: string;
+}
+
 interface Track {
   trackId: number;
   trackName: string;
@@ -67,7 +73,7 @@ interface Track {
   collectionName: string;
 }
 
-export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes = [], guestLimitReached = false, faqs = [], weddingParty = [] }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[]; photos?: Photo[]; wishes?: Wish[]; guestLimitReached?: boolean; faqs?: FAQ[]; weddingParty?: PartyMember[] }) {
+export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes = [], guestLimitReached = false, faqs = [], weddingParty = [], registryLinks = [] }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[]; photos?: Photo[]; wishes?: Wish[]; guestLimitReached?: boolean; faqs?: FAQ[]; weddingParty?: PartyMember[]; registryLinks?: RegistryLink[] }) {
   const [tab, setTab] = useState<'info' | 'rsvp' | 'playlist' | 'photos' | 'wishes'>('info');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, years: 0, months: 0, remDays: 0 });
 
@@ -280,7 +286,7 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
                 <button onClick={() => setTab('playlist')} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{background:'#F5EAE4', color:'#B07D6E'}}>Request a Song</button>
               </div>
             </div>
-            {weddingParty.length > 0 && (
+            {wedding.is_premium && weddingParty.length > 0 && (
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
                 <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>👰🤵 Wedding Party</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -301,7 +307,19 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
                 </div>
               </div>
             )}
-            {faqs.length > 0 && (
+            {wedding.is_premium && registryLinks.length > 0 && (
+              <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
+                <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>🎁 Registry</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {registryLinks.map(r => (
+                    <a key={r.id} href={r.url} target="_blank" rel="noopener noreferrer" className="block text-center p-4 rounded-xl font-semibold text-sm transition-colors" style={{background:'#F5EAE4', color:'#B07D6E'}}>
+                      {r.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+            {wedding.is_premium && faqs.length > 0 && (
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
                 <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>❓ Frequently Asked Questions</h2>
                 <div className="space-y-3">
@@ -530,3 +548,4 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
     </div>
   );
 }
+
