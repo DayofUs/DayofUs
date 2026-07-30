@@ -93,6 +93,12 @@ interface PartyMember {
   photo_url: string | null;
 }
 
+interface RegistryLink {
+  id: string;
+  label: string;
+  url: string;
+}
+
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$', GBP: '£', EUR: '€', AUD: 'A$', CAD: 'C$',
   NZD: 'NZ$', SGD: 'S$', ZAR: 'R', INR: '₹', AED: 'AED',
@@ -100,7 +106,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 const TOTAL_CHECKLIST_ITEMS = 32;
 
-export default function DashboardClient({ user, wedding, rsvps, songs, photos = [], wishes = [], budget = null, checklist = null, venueComparison = null, faqs = [], weddingParty = [] }: {
+export default function DashboardClient({ user, wedding, rsvps, songs, photos = [], wishes = [], budget = null, checklist = null, venueComparison = null, faqs = [], weddingParty = [], registryLinks = [] }: {
   user: User;
   wedding: Wedding | null;
   rsvps: RSVP[];
@@ -112,6 +118,7 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
   venueComparison?: VenueComparison | null;
   faqs?: FAQ[];
   weddingParty?: PartyMember[];
+  registryLinks?: RegistryLink[];
 }) {
   const [weddingDate, setWeddingDate] = useState(wedding?.wedding_date || '');
   const [venue, setVenue] = useState(wedding?.venue || '');
@@ -138,6 +145,10 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
   const [newPartyPhoto, setNewPartyPhoto] = useState<File | null>(null);
   const [newPartyPhotoPreview, setNewPartyPhotoPreview] = useState<string | null>(null);
   const [addingParty, setAddingParty] = useState(false);
+  const [registryList, setRegistryList] = useState<RegistryLink[]>(registryLinks);
+  const [newRegistryLabel, setNewRegistryLabel] = useState('');
+  const [newRegistryUrl, setNewRegistryUrl] = useState('');
+  const [addingRegistry, setAddingRegistry] = useState(false);
   const router = useRouter();
 
   const coupleName = wedding ? `${wedding.partner1_name} & ${wedding.partner2_name}` : 'Your Wedding';
@@ -313,6 +324,33 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
     const supabase = createClient();
     await supabase.from('wedding_party').delete().eq('id', id);
     setPartyList(prev => prev.filter(p => p.id !== id));
+  };
+
+  const addRegistryLink = async () => {
+    if (!wedding || !newRegistryLabel.trim() || !newRegistryUrl.trim()) return;
+    let url = newRegistryUrl.trim();
+    if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
+
+    setAddingRegistry(true);
+    const supabase = createClient();
+    const { data, error } = await supabase.from('wedding_registry_links').insert({
+      wedding_id: wedding.id,
+      label: newRegistryLabel.trim(),
+      url,
+    }).select().single();
+
+    if (!error && data) {
+      setRegistryList(prev => [...prev, data]);
+      setNewRegistryLabel('');
+      setNewRegistryUrl('');
+    }
+    setAddingRegistry(false);
+  };
+
+  const removeRegistryLink = async (id: string) => {
+    const supabase = createClient();
+    await supabase.from('wedding_registry_links').delete().eq('id', id);
+    setRegistryList(prev => prev.filter(r => r.id !== id));
   };
 
   const exportPDF = () => {
@@ -724,42 +762,61 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
         <h2 className="font-semibold text-lg mb-1" style={{color:'#2C2C3E'}}>❓ Guest FAQ</h2>
         <p className="text-sm mb-4" style={{color:'#6B7280'}}>Answer common questions once — parking, dress code, plus-ones — so guests stop asking you directly.</p>
 
-        {faqList.length > 0 && (
-          <div className="space-y-3 mb-4">
-            {faqList.map(f => (
-              <div key={f.id} className="p-4 rounded-xl" style={{background:'#F8FAFC', border:'1px solid #E8DDD8'}}>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm mb-1" style={{color:'#2C2C3E'}}>{f.question}</div>
-                    <div className="text-sm" style={{color:'#6B7280'}}>{f.answer}</div>
-                  </div>
-                  <button onClick={() => removeFaq(f.id)} className="text-xs flex-shrink-0" style={{color:'#DC2626'}}>Remove</button>
-                </div>
-              </div>
-            ))}
+        {!wedding?.is_premium ? (
+          <div className="p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{background:'#F5EAE4'}}>
+            <div>
+              <div className="text-sm font-semibold" style={{color:'#2C2C3E'}}>Unlock the Guest FAQ</div>
+              <div className="text-xs" style={{color:'#6B7280'}}>Plus unlimited photos, wishes wall, custom slug & more — one-time $19</div>
+            </div>
+            <button
+              onClick={handleUpgrade}
+              disabled={upgrading}
+              className="font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-40 flex-shrink-0"
+              style={{background:'#B07D6E', color:'#ffffff'}}
+            >
+              {upgrading ? 'Redirecting...' : 'Upgrade to Premium'}
+            </button>
           </div>
-        )}
+        ) : (
+          <>
+            {faqList.length > 0 && (
+              <div className="space-y-3 mb-4">
+                {faqList.map(f => (
+                  <div key={f.id} className="p-4 rounded-xl" style={{background:'#F8FAFC', border:'1px solid #E8DDD8'}}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm mb-1" style={{color:'#2C2C3E'}}>{f.question}</div>
+                        <div className="text-sm" style={{color:'#6B7280'}}>{f.answer}</div>
+                      </div>
+                      <button onClick={() => removeFaq(f.id)} className="text-xs flex-shrink-0" style={{color:'#DC2626'}}>Remove</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-        <div className="space-y-3">
-          <input
-            value={newQuestion}
-            onChange={e => setNewQuestion(e.target.value)}
-            placeholder="e.g. Is there parking at the venue?"
-            className="w-full h-11 px-4 rounded-xl outline-none text-sm"
-            style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
-          />
-          <textarea
-            value={newAnswer}
-            onChange={e => setNewAnswer(e.target.value)}
-            placeholder="e.g. Yes, free parking is available on-site."
-            rows={2}
-            className="w-full px-4 py-3 rounded-xl outline-none text-sm resize-none"
-            style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
-          />
-          <button onClick={addFaq} disabled={addingFaq || !newQuestion.trim() || !newAnswer.trim()} className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40" style={{background:'#B07D6E', color:'#ffffff'}}>
-            {addingFaq ? 'Adding...' : '+ Add Question'}
-          </button>
-        </div>
+            <div className="space-y-3">
+              <input
+                value={newQuestion}
+                onChange={e => setNewQuestion(e.target.value)}
+                placeholder="e.g. Is there parking at the venue?"
+                className="w-full h-11 px-4 rounded-xl outline-none text-sm"
+                style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
+              />
+              <textarea
+                value={newAnswer}
+                onChange={e => setNewAnswer(e.target.value)}
+                placeholder="e.g. Yes, free parking is available on-site."
+                rows={2}
+                className="w-full px-4 py-3 rounded-xl outline-none text-sm resize-none"
+                style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
+              />
+              <button onClick={addFaq} disabled={addingFaq || !newQuestion.trim() || !newAnswer.trim()} className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40" style={{background:'#B07D6E', color:'#ffffff'}}>
+                {addingFaq ? 'Adding...' : '+ Add Question'}
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Wedding Party */}
@@ -767,66 +824,85 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
         <h2 className="font-semibold text-lg mb-1" style={{color:'#2C2C3E'}}>👰🤵 Wedding Party</h2>
         <p className="text-sm mb-4" style={{color:'#6B7280'}}>Introduce your bridesmaids, groomsmen, and anyone else standing up with you.</p>
 
-        {partyList.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            {partyList.map(p => (
-              <div key={p.id} className="flex items-start gap-3 p-3 rounded-xl" style={{background:'#F8FAFC', border:'1px solid #E8DDD8'}}>
-                {p.photo_url ? (
-                  <img src={p.photo_url} alt={p.name} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
-                ) : (
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl flex-shrink-0" style={{background:'#F5EAE4'}}>👤</div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm" style={{color:'#2C2C3E'}}>{p.name}</div>
-                  <div className="text-xs mb-1" style={{color:'#B07D6E'}}>{p.role}</div>
-                  {p.bio && <div className="text-xs" style={{color:'#6B7280'}}>{p.bio}</div>}
-                </div>
-                <button onClick={() => removePartyMember(p.id)} className="text-xs flex-shrink-0" style={{color:'#DC2626'}}>Remove</button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="space-y-3 p-4 rounded-xl" style={{background:'#FDFAF7', border:'1px dashed #E8DDD8'}}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input
-              value={newPartyName}
-              onChange={e => setNewPartyName(e.target.value)}
-              placeholder="Name"
-              className="w-full h-11 px-4 rounded-xl outline-none text-sm"
-              style={{border:'1px solid #E8DDD8', background:'#ffffff', color:'#2C2C3E'}}
-            />
-            <input
-              value={newPartyRole}
-              onChange={e => setNewPartyRole(e.target.value)}
-              placeholder="Role (e.g. Maid of Honor)"
-              className="w-full h-11 px-4 rounded-xl outline-none text-sm"
-              style={{border:'1px solid #E8DDD8', background:'#ffffff', color:'#2C2C3E'}}
-            />
-          </div>
-          <textarea
-            value={newPartyBio}
-            onChange={e => setNewPartyBio(e.target.value)}
-            placeholder="Short bio or fun fact (optional)"
-            rows={2}
-            className="w-full px-4 py-3 rounded-xl outline-none text-sm resize-none"
-            style={{border:'1px solid #E8DDD8', background:'#ffffff', color:'#2C2C3E'}}
-          />
-          <div className="flex items-center gap-3">
-            {newPartyPhotoPreview ? (
-              <img src={newPartyPhotoPreview} alt="Preview" className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-            ) : (
-              <label className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center cursor-pointer text-lg" style={{background:'#F5EAE4', color:'#B07D6E'}}>
-                📷
-                <input type="file" accept="image/*" onChange={handlePartyPhotoSelect} className="hidden" />
-              </label>
-            )}
-            <span className="text-xs" style={{color:'#6B7280'}}>Photo (optional)</span>
-            <button onClick={addPartyMember} disabled={addingParty || !newPartyName.trim() || !newPartyRole.trim()} className="ml-auto px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40" style={{background:'#B07D6E', color:'#ffffff'}}>
-              {addingParty ? 'Adding...' : '+ Add'}
+        {!wedding?.is_premium ? (
+          <div className="p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{background:'#F5EAE4'}}>
+            <div>
+              <div className="text-sm font-semibold" style={{color:'#2C2C3E'}}>Unlock Wedding Party Bios</div>
+              <div className="text-xs" style={{color:'#6B7280'}}>Plus unlimited photos, wishes wall, custom slug & more — one-time $19</div>
+            </div>
+            <button
+              onClick={handleUpgrade}
+              disabled={upgrading}
+              className="font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-40 flex-shrink-0"
+              style={{background:'#B07D6E', color:'#ffffff'}}
+            >
+              {upgrading ? 'Redirecting...' : 'Upgrade to Premium'}
             </button>
           </div>
-        </div>
+        ) : (
+          <>
+            {partyList.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                {partyList.map(p => (
+                  <div key={p.id} className="flex items-start gap-3 p-3 rounded-xl" style={{background:'#F8FAFC', border:'1px solid #E8DDD8'}}>
+                    {p.photo_url ? (
+                      <img src={p.photo_url} alt={p.name} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl flex-shrink-0" style={{background:'#F5EAE4'}}>👤</div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm" style={{color:'#2C2C3E'}}>{p.name}</div>
+                      <div className="text-xs mb-1" style={{color:'#B07D6E'}}>{p.role}</div>
+                      {p.bio && <div className="text-xs" style={{color:'#6B7280'}}>{p.bio}</div>}
+                    </div>
+                    <button onClick={() => removePartyMember(p.id)} className="text-xs flex-shrink-0" style={{color:'#DC2626'}}>Remove</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-3 p-4 rounded-xl" style={{background:'#FDFAF7', border:'1px dashed #E8DDD8'}}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  value={newPartyName}
+                  onChange={e => setNewPartyName(e.target.value)}
+                  placeholder="Name"
+                  className="w-full h-11 px-4 rounded-xl outline-none text-sm"
+                  style={{border:'1px solid #E8DDD8', background:'#ffffff', color:'#2C2C3E'}}
+                />
+                <input
+                  value={newPartyRole}
+                  onChange={e => setNewPartyRole(e.target.value)}
+                  placeholder="Role (e.g. Maid of Honor)"
+                  className="w-full h-11 px-4 rounded-xl outline-none text-sm"
+                  style={{border:'1px solid #E8DDD8', background:'#ffffff', color:'#2C2C3E'}}
+                />
+              </div>
+              <textarea
+                value={newPartyBio}
+                onChange={e => setNewPartyBio(e.target.value)}
+                placeholder="Short bio or fun fact (optional)"
+                rows={2}
+                className="w-full px-4 py-3 rounded-xl outline-none text-sm resize-none"
+                style={{border:'1px solid #E8DDD8', background:'#ffffff', color:'#2C2C3E'}}
+              />
+              <div className="flex items-center gap-3">
+                {newPartyPhotoPreview ? (
+                  <img src={newPartyPhotoPreview} alt="Preview" className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <label className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center cursor-pointer text-lg" style={{background:'#F5EAE4', color:'#B07D6E'}}>
+                    📷
+                    <input type="file" accept="image/*" onChange={handlePartyPhotoSelect} className="hidden" />
+                  </label>
+                )}
+                <span className="text-xs" style={{color:'#6B7280'}}>Photo (optional)</span>
+                <button onClick={addPartyMember} disabled={addingParty || !newPartyName.trim() || !newPartyRole.trim()} className="ml-auto px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40" style={{background:'#B07D6E', color:'#ffffff'}}>
+                  {addingParty ? 'Adding...' : '+ Add'}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Budget Overview */}
@@ -983,3 +1059,4 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
     </main>
   );
 }
+
