@@ -905,6 +905,64 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
         )}
       </div>
 
+      {/* Registry Links */}
+      <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
+        <h2 className="font-semibold text-lg mb-1" style={{color:'#2C2C3E'}}>🎁 Registry Links</h2>
+        <p className="text-sm mb-4" style={{color:'#6B7280'}}>Add links to your existing registries or a cash fund — guests see clean buttons on your guest page.</p>
+
+        {!wedding?.is_premium ? (
+          <div className="p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{background:'#F5EAE4'}}>
+            <div>
+              <div className="text-sm font-semibold" style={{color:'#2C2C3E'}}>Unlock Registry Links</div>
+              <div className="text-xs" style={{color:'#6B7280'}}>Plus unlimited photos, wishes wall, custom slug & more — one-time $19</div>
+            </div>
+            <button
+              onClick={handleUpgrade}
+              disabled={upgrading}
+              className="font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-40 flex-shrink-0"
+              style={{background:'#B07D6E', color:'#ffffff'}}
+            >
+              {upgrading ? 'Redirecting...' : 'Upgrade to Premium'}
+            </button>
+          </div>
+        ) : (
+          <>
+            {registryList.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {registryList.map(r => (
+                  <div key={r.id} className="flex items-center justify-between gap-3 p-3 rounded-xl" style={{background:'#F8FAFC', border:'1px solid #E8DDD8'}}>
+                    <div className="min-w-0">
+                      <div className="font-semibold text-sm" style={{color:'#2C2C3E'}}>{r.label}</div>
+                      <div className="text-xs truncate" style={{color:'#6B7280'}}>{r.url}</div>
+                    </div>
+                    <button onClick={() => removeRegistryLink(r.id)} className="text-xs flex-shrink-0" style={{color:'#DC2626'}}>Remove</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                value={newRegistryLabel}
+                onChange={e => setNewRegistryLabel(e.target.value)}
+                placeholder="e.g. Our Amazon Registry"
+                className="flex-1 h-11 px-4 rounded-xl outline-none text-sm min-w-0"
+                style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
+              />
+              <input
+                value={newRegistryUrl}
+                onChange={e => setNewRegistryUrl(e.target.value)}
+                placeholder="Paste link here"
+                className="flex-1 h-11 px-4 rounded-xl outline-none text-sm min-w-0"
+                style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}
+              />
+              <button onClick={addRegistryLink} disabled={addingRegistry || !newRegistryLabel.trim() || !newRegistryUrl.trim()} className="w-full sm:w-auto px-5 h-11 rounded-xl font-semibold text-sm disabled:opacity-40 flex-shrink-0" style={{background:'#B07D6E', color:'#ffffff'}}>
+                {addingRegistry ? 'Adding...' : '+ Add'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Budget Overview */}
       <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
         <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>💰 Budget Overview</h2>
@@ -1059,3 +1117,4 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
     </main>
   );
 }
+
