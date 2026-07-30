@@ -1,6 +1,7 @@
 'use client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -280,8 +281,14 @@ export default function BudgetPage() {
           </button>
           <p className="text-xs mt-3 text-center" style={{color:'#6B7280'}}>Always seek independent financial advice for major purchasing decisions.</p>
         </div>
+
+        <p className="text-center text-sm mt-6" style={{color:'#6B7280'}}>
+          Want more detail on typical wedding costs? Read our{' '}
+          <Link href="/guides/wedding-budget-breakdown" className="font-semibold underline" style={{color:'#B07D6E'}}>wedding budget breakdown guide</Link>.
+        </p>
       </main>
       <Footer />
     </>
   );
 }
+
