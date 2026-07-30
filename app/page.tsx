@@ -129,7 +129,7 @@ export default function HomePage() {
                 <div className="text-sm font-semibold uppercase tracking-wider mb-2" style={{color:'#6B7280'}}>Free</div>
                 <div className="font-serif text-4xl font-bold mb-6" style={{color:'#2C2C3E'}}>$0</div>
                 <ul className="space-y-3 mb-8">
-                  {['Your own wedding page & shareable link', 'Guest RSVPs (up to 75 guests)', 'Song requests with previews', 'Photo gallery via QR code (up to 30 photos)', 'Budget planner & live countdown'].map(item => (
+                  {['Your own wedding page & shareable link', 'Guest RSVPs with meal choices (up to 75 guests)', 'Song requests with previews', 'Photo gallery via QR code (up to 30 photos)', 'Budget planner & live countdown', 'Wedding checklist & venue comparison tool'].map(item => (
                     <li key={item} className="flex items-start gap-2 text-sm" style={{color:'#475569'}}>
                       <span style={{color:'#7A9E8A'}}>✓</span> {item}
                     </li>
@@ -145,7 +145,7 @@ export default function HomePage() {
                 <div className="text-sm font-semibold uppercase tracking-wider mb-2" style={{color:'#B07D6E'}}>Premium</div>
                 <div className="font-serif text-4xl font-bold mb-6" style={{color:'#2C2C3E'}}>$19</div>
                 <ul className="space-y-3 mb-8">
-                  {['Everything in Free, plus:', 'Unlimited photo uploads', 'Unlimited guests', 'Custom link (dayofus.org/w/yourname)', 'Wishes wall for guest messages', 'PDF export of guest list & playlist'].map(item => (
+                  {['Everything in Free, plus:', 'Unlimited photo uploads', 'Unlimited guests', 'Custom link (dayofus.org/w/yourname)', 'Wishes wall for guest messages', 'Wedding party bios', 'Guest FAQ section', 'Registry links', 'PDF export of guest list & playlist'].map(item => (
                     <li key={item} className="flex items-start gap-2 text-sm" style={{color: item.startsWith('Everything') ? '#6B7280' : '#475569', fontStyle: item.startsWith('Everything') ? 'italic' : 'normal'}}>
                       {!item.startsWith('Everything') && <span style={{color:'#7A9E8A'}}>✓</span>} {item}
                     </li>
@@ -232,3 +232,4 @@ export default function HomePage() {
     </>
   );
 }
+
