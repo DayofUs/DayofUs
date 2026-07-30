@@ -5,6 +5,36 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Day of Us — Free Wedding Website & Guest Hub",
   description: "Create a free wedding page in minutes. Guests RSVP, request songs, upload photos and leave wishes — all from one link you share. No app required.",
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "Day of Us — Free Wedding Website & Guest Hub",
+    description: "Create a free wedding page in minutes. Guests RSVP, request songs, upload photos and leave wishes — all from one link you share. No app required.",
+    url: "https://dayofus.org",
+    siteName: "Day of Us",
+    images: [
+      {
+        url: "https://dayofus.org/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Day of Us — One Wedding Page, Everything Included",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Day of Us — Free Wedding Website & Guest Hub",
+    description: "Create a free wedding page in minutes. Guests RSVP, request songs, upload photos and leave wishes — all from one link you share. No app required.",
+    images: ["https://dayofus.org/og-image.png"],
+  },
 };
 
 export default function RootLayout({
