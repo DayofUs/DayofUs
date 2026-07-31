@@ -48,6 +48,30 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Day of Us",
+              url: "https://dayofus.org",
+              logo: "https://dayofus.org/icon-512.png",
+              description: "A free wedding website builder with RSVPs, song requests, QR code photo uploads, and guest wishes.",
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Day of Us",
+              url: "https://dayofus.org",
+            }),
+          }}
+        />
       </head>
       <body className="bg-cream text-navy antialiased">
         {children}
