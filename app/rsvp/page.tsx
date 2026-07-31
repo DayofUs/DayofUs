@@ -186,6 +186,11 @@ export default function RSVPPage() {
             </button>
           </div>
         </div>
+
+        <p className="text-center text-sm mt-6" style={{color:'#6B7280'}}>
+          Not sure how many people to invite? Read our{' '}
+          <Link href="/guides/wedding-guest-list-size" className="font-semibold underline" style={{color:'#B07D6E'}}>guest list size guide</Link>.
+        </p>
       </main>
       <Footer />
     </>
