@@ -23,6 +23,33 @@ const quickTools = [
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "Day of Us",
+            applicationCategory: "LifestyleApplication",
+            operatingSystem: "Web",
+            description: "Create a free wedding page in minutes. Guests RSVP, request songs, upload photos and leave wishes — all from one link you share.",
+            offers: [
+              {
+                "@type": "Offer",
+                name: "Free",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              {
+                "@type": "Offer",
+                name: "Premium",
+                price: "19",
+                priceCurrency: "USD",
+              },
+            ],
+          }),
+        }}
+      />
       <Header />
       <main>
 
@@ -232,4 +259,3 @@ export default function HomePage() {
     </>
   );
 }
-
