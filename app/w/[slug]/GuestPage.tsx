@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import PhotoGallery from '@/components/PhotoGallery';
+import { getTheme } from '@/lib/themes';
 
 interface Wedding {
   id: string;
@@ -14,6 +15,7 @@ interface Wedding {
   slug: string;
   is_premium?: boolean | null;
   meal_options?: string[] | null;
+  theme?: string | null;
 }
 
 interface RSVP {
@@ -74,6 +76,7 @@ interface Track {
 }
 
 export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes = [], guestLimitReached = false, faqs = [], weddingParty = [], registryLinks = [] }: { wedding: Wedding; rsvps: RSVP[]; songs: Song[]; photos?: Photo[]; wishes?: Wish[]; guestLimitReached?: boolean; faqs?: FAQ[]; weddingParty?: PartyMember[]; registryLinks?: RegistryLink[] }) {
+  const theme = getTheme(wedding.theme);
   const [tab, setTab] = useState<'info' | 'rsvp' | 'playlist' | 'photos' | 'wishes'>('info');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, years: 0, months: 0, remDays: 0 });
 
@@ -200,9 +203,9 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
   };
 
   return (
-    <div style={{minHeight:'100vh', background:'#FDFAF7'}}>
+    <div style={{minHeight:'100vh', background:theme.cream}}>
 
-      <div className="text-center py-16 px-6" style={{background:'linear-gradient(135deg, #2C2C3E, #B07D6E)'}}>
+      <div className="text-center py-16 px-6" style={{background:`linear-gradient(135deg, ${theme.navy}, ${theme.primary})`}}>
         <div className="text-4xl mb-4">💍</div>
         <h1 className="font-serif text-4xl md:text-5xl font-bold mb-2" style={{color:'#ffffff'}}>{coupleName}</h1>
         {wedding.wedding_date && (
@@ -228,11 +231,11 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
 
         <div className="flex justify-center gap-8">
           <div className="text-center">
-            <div className="font-bold text-xl" style={{color:'#D4AF7A'}}>{confirmedCount}</div>
+            <div className="font-bold text-xl" style={{color:theme.accent}}>{confirmedCount}</div>
             <div className="text-xs" style={{color:'rgba(255,255,255,0.6)'}}>Guests confirmed</div>
           </div>
           <div className="text-center">
-            <div className="font-bold text-xl" style={{color:'#D4AF7A'}}>{songList.length}</div>
+            <div className="font-bold text-xl" style={{color:theme.accent}}>{songList.length}</div>
             <div className="text-xs" style={{color:'rgba(255,255,255,0.6)'}}>Songs requested</div>
           </div>
         </div>
@@ -241,14 +244,14 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
       {wedding.message && (
         <div className="max-w-xl mx-auto px-6 py-8 text-center">
           <p className="font-serif text-lg italic" style={{color:'#6B7280'}}>"{wedding.message}"</p>
-          <p className="text-sm mt-2" style={{color:'#B07D6E'}}>— {coupleName}</p>
+          <p className="text-sm mt-2" style={{color:theme.primary}}>— {coupleName}</p>
         </div>
       )}
 
       <div className="max-w-2xl mx-auto px-6">
-        <div className="flex rounded-2xl p-1 mb-8 gap-1 overflow-x-auto" style={{background:'#F0E8E4'}}>
+        <div className="flex rounded-2xl p-1 mb-8 gap-1 overflow-x-auto" style={{background:theme.blush}}>
           {[['info', '📋 Info'], ['rsvp', '✉️ RSVP'], ['playlist', '🎵 Songs'], ['photos', '📸 Photos'], ['wishes', '💌 Wishes']].map(([key, label]) => (
-            <button key={key} onClick={() => setTab(key as any)} className="flex-shrink-0 px-4 py-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap" style={{background: tab === key ? '#ffffff' : 'transparent', color: tab === key ? '#B07D6E' : '#6B7280', boxShadow: tab === key ? '0 1px 4px rgba(0,0,0,0.1)' : 'none'}}>
+            <button key={key} onClick={() => setTab(key as any)} className="flex-shrink-0 px-4 py-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap" style={{background: tab === key ? '#ffffff' : 'transparent', color: tab === key ? theme.primary : '#6B7280', boxShadow: tab === key ? '0 1px 4px rgba(0,0,0,0.1)' : 'none'}}>
               {label}
             </button>
           ))}
@@ -257,13 +260,13 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
         {tab === 'info' && (
           <div className="space-y-4 pb-12">
             <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-              <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>Wedding Details</h2>
+              <h2 className="font-semibold text-lg mb-4" style={{color:theme.navy}}>Wedding Details</h2>
               <div className="space-y-3">
                 {wedding.wedding_date && (
                   <div className="flex items-center gap-3">
                     <span className="text-xl">📅</span>
                     <div>
-                      <div className="text-sm font-medium" style={{color:'#2C2C3E'}}>{new Date(wedding.wedding_date).toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}</div>
+                      <div className="text-sm font-medium" style={{color:theme.navy}}>{new Date(wedding.wedding_date).toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}</div>
                       <div className="text-xs" style={{color:'#6B7280'}}>Wedding Date</div>
                     </div>
                   </div>
@@ -272,7 +275,7 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
                   <div className="flex items-center gap-3">
                     <span className="text-xl">📍</span>
                     <div>
-                      <div className="text-sm font-medium" style={{color:'#2C2C3E'}}>{wedding.venue}</div>
+                      <div className="text-sm font-medium" style={{color:theme.navy}}>{wedding.venue}</div>
                       <div className="text-xs" style={{color:'#6B7280'}}>Venue</div>
                     </div>
                   </div>
@@ -280,26 +283,26 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
               </div>
             </div>
             <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-              <h2 className="font-semibold mb-3" style={{color:'#2C2C3E'}}>Let us know you are coming</h2>
+              <h2 className="font-semibold mb-3" style={{color:theme.navy}}>Let us know you are coming</h2>
               <div className="flex gap-3">
-                <button onClick={() => setTab('rsvp')} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{background:'#B07D6E', color:'#ffffff'}}>RSVP Now</button>
-                <button onClick={() => setTab('playlist')} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{background:'#F5EAE4', color:'#B07D6E'}}>Request a Song</button>
+                <button onClick={() => setTab('rsvp')} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{background:theme.primary, color:'#ffffff'}}>RSVP Now</button>
+                <button onClick={() => setTab('playlist')} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{background:theme.blush, color:theme.primary}}>Request a Song</button>
               </div>
             </div>
             {wedding.is_premium && weddingParty.length > 0 && (
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-                <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>👰🤵 Wedding Party</h2>
+                <h2 className="font-semibold text-lg mb-4" style={{color:theme.navy}}>👰🤵 Wedding Party</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {weddingParty.map(p => (
                     <div key={p.id} className="flex items-start gap-3 p-3 rounded-xl" style={{background:'#F8FAFC'}}>
                       {p.photo_url ? (
                         <img src={p.photo_url} alt={p.name} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
                       ) : (
-                        <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl flex-shrink-0" style={{background:'#F5EAE4'}}>👤</div>
+                        <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl flex-shrink-0" style={{background:theme.blush}}>👤</div>
                       )}
                       <div className="min-w-0">
-                        <div className="font-semibold text-sm" style={{color:'#2C2C3E'}}>{p.name}</div>
-                        <div className="text-xs mb-1" style={{color:'#B07D6E'}}>{p.role}</div>
+                        <div className="font-semibold text-sm" style={{color:theme.navy}}>{p.name}</div>
+                        <div className="text-xs mb-1" style={{color:theme.primary}}>{p.role}</div>
                         {p.bio && <div className="text-xs" style={{color:'#6B7280'}}>{p.bio}</div>}
                       </div>
                     </div>
@@ -309,10 +312,10 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
             )}
             {wedding.is_premium && registryLinks.length > 0 && (
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-                <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>🎁 Registry</h2>
+                <h2 className="font-semibold text-lg mb-4" style={{color:theme.navy}}>🎁 Registry</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {registryLinks.map(r => (
-                    <a key={r.id} href={r.url} target="_blank" rel="noopener noreferrer" className="block text-center p-4 rounded-xl font-semibold text-sm transition-colors" style={{background:'#F5EAE4', color:'#B07D6E'}}>
+                    <a key={r.id} href={r.url} target="_blank" rel="noopener noreferrer" className="block text-center p-4 rounded-xl font-semibold text-sm transition-colors" style={{background:theme.blush, color:theme.primary}}>
                       {r.label}
                     </a>
                   ))}
@@ -321,11 +324,11 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
             )}
             {wedding.is_premium && faqs.length > 0 && (
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-                <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>❓ Frequently Asked Questions</h2>
+                <h2 className="font-semibold text-lg mb-4" style={{color:theme.navy}}>❓ Frequently Asked Questions</h2>
                 <div className="space-y-3">
                   {faqs.map(f => (
                     <div key={f.id} className="p-4 rounded-xl" style={{background:'#F8FAFC'}}>
-                      <div className="font-semibold text-sm mb-1" style={{color:'#2C2C3E'}}>{f.question}</div>
+                      <div className="font-semibold text-sm mb-1" style={{color:theme.navy}}>{f.question}</div>
                       <div className="text-sm" style={{color:'#6B7280'}}>{f.answer}</div>
                     </div>
                   ))}
@@ -340,12 +343,12 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
             {rsvpDone ? (
               <div className="bg-white rounded-2xl p-8 text-center" style={{border:'1px solid #E8DDD8'}}>
                 <div className="text-5xl mb-4">🎉</div>
-                <h2 className="font-serif text-2xl font-bold mb-2" style={{color:'#2C2C3E'}}>Thank you, {guestName}!</h2>
+                <h2 className="font-serif text-2xl font-bold mb-2" style={{color:theme.navy}}>Thank you, {guestName}!</h2>
                 <p style={{color:'#6B7280'}}>{attending === 'yes' ? `We cannot wait to celebrate with you!` : `We are sorry you cannot make it.`}</p>
               </div>
             ) : (
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-                <h2 className="font-semibold text-lg mb-6" style={{color:'#2C2C3E'}}>Your RSVP</h2>
+                <h2 className="font-semibold text-lg mb-6" style={{color:theme.navy}}>Your RSVP</h2>
                 {guestLimitReached && (
                   <div className="mb-4 p-3 rounded-xl text-sm" style={{background:'#FEF3C7', color:'#92400E'}}>
                     This wedding has reached its guest capacity for accepted RSVPs. You're still welcome to let them know if you can't make it.
@@ -355,13 +358,13 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Your Full Name</label>
-                    <input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="e.g. John Smith" className="w-full h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
+                    <input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="e.g. John Smith" className="w-full h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:theme.navy}} />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Will you be attending?</label>
                     <div className="flex gap-3">
                       {[['yes', '✅ Joyfully accepts'], ['no', '❌ Regretfully declines']].map(([val, label]) => (
-                        <button key={val} onClick={() => setAttending(val)} disabled={guestLimitReached && val === 'yes'} className="flex-1 py-3 rounded-xl text-sm font-semibold border-2 transition-colors disabled:opacity-40" style={{background: attending === val ? '#B07D6E' : '#ffffff', borderColor: attending === val ? '#B07D6E' : '#E8DDD8', color: attending === val ? '#ffffff' : '#2C2C3E'}}>
+                        <button key={val} onClick={() => setAttending(val)} disabled={guestLimitReached && val === 'yes'} className="flex-1 py-3 rounded-xl text-sm font-semibold border-2 transition-colors disabled:opacity-40" style={{background: attending === val ? theme.primary : '#ffffff', borderColor: attending === val ? theme.primary : '#E8DDD8', color: attending === val ? '#ffffff' : theme.navy}}>
                           {label}
                         </button>
                       ))}
@@ -371,14 +374,14 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
                     <>
                       <div>
                         <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Number of guests including yourself</label>
-                        <select value={guestCount} onChange={e => setGuestCount(e.target.value)} className="w-full h-12 px-4 rounded-xl outline-none appearance-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}>
+                        <select value={guestCount} onChange={e => setGuestCount(e.target.value)} className="w-full h-12 px-4 rounded-xl outline-none appearance-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:theme.navy}}>
                           {['1','2','3','4'].map(n => <option key={n} value={n}>{n} {n === '1' ? 'guest' : 'guests'}</option>)}
                         </select>
                       </div>
                       {wedding.meal_options && wedding.meal_options.length > 0 && (
                         <div>
                           <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Meal Choice</label>
-                          <select value={mealChoice} onChange={e => setMealChoice(e.target.value)} className="w-full h-12 px-4 rounded-xl outline-none appearance-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}}>
+                          <select value={mealChoice} onChange={e => setMealChoice(e.target.value)} className="w-full h-12 px-4 rounded-xl outline-none appearance-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:theme.navy}}>
                             <option value="">Select a meal...</option>
                             {wedding.meal_options.map(option => <option key={option} value={option}>{option}</option>)}
                           </select>
@@ -386,15 +389,15 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
                       )}
                       <div>
                         <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Dietary requirements (optional)</label>
-                        <input value={dietary} onChange={e => setDietary(e.target.value)} placeholder="e.g. vegetarian, nut allergy..." className="w-full h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
+                        <input value={dietary} onChange={e => setDietary(e.target.value)} placeholder="e.g. vegetarian, nut allergy..." className="w-full h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:theme.navy}} />
                       </div>
                     </>
                   )}
                   <div>
                     <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Message to the couple (optional)</label>
-                    <textarea value={guestMessage} onChange={e => setGuestMessage(e.target.value)} placeholder="Share your well wishes..." rows={3} className="w-full px-4 py-3 rounded-xl outline-none resize-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
+                    <textarea value={guestMessage} onChange={e => setGuestMessage(e.target.value)} placeholder="Share your well wishes..." rows={3} className="w-full px-4 py-3 rounded-xl outline-none resize-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:theme.navy}} />
                   </div>
-                  <button onClick={submitRSVP} disabled={!guestName || !attending || rsvpLoading || (guestLimitReached && attending === 'yes')} className="w-full font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2" style={{background:'#B07D6E', color:'#ffffff'}}>
+                  <button onClick={submitRSVP} disabled={!guestName || !attending || rsvpLoading || (guestLimitReached && attending === 'yes')} className="w-full font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2" style={{background:theme.primary, color:'#ffffff'}}>
                     {rsvpLoading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>Submitting...</> : 'Submit RSVP 💍'}
                   </button>
                 </div>
@@ -406,17 +409,17 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
         {tab === 'playlist' && (
           <div className="pb-12 space-y-4">
             <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-              <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>Request a Song</h2>
+              <h2 className="font-semibold text-lg mb-4" style={{color:theme.navy}}>Request a Song</h2>
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Your name (optional)</label>
-                  <input value={submitter} onChange={e => setSubmitter(e.target.value)} placeholder="e.g. Aunt Carol" className="w-full h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
+                  <input value={submitter} onChange={e => setSubmitter(e.target.value)} placeholder="e.g. Aunt Carol" className="w-full h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:theme.navy}} />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Search for a song</label>
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchSongs()} placeholder="Song name or artist..." className="flex-1 h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
-                    <button onClick={searchSongs} disabled={searching || !query.trim()} className="w-full sm:w-auto px-6 h-12 rounded-xl font-semibold text-sm disabled:opacity-40" style={{background:'#B07D6E', color:'#ffffff'}}>
+                    <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchSongs()} placeholder="Song name or artist..." className="flex-1 h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:theme.navy}} />
+                    <button onClick={searchSongs} disabled={searching || !query.trim()} className="w-full sm:w-auto px-6 h-12 rounded-xl font-semibold text-sm disabled:opacity-40" style={{background:theme.primary, color:'#ffffff'}}>
                       {searching ? '...' : 'Search'}
                     </button>
                   </div>
@@ -430,16 +433,16 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
                     <div key={track.trackId} className="flex items-center gap-3 p-3 rounded-xl" style={{background:'#F8FAFC', border:'1px solid #E8DDD8'}}>
                       <img src={track.artworkUrl100} alt={track.trackName} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm truncate" style={{color:'#2C2C3E'}}>{track.trackName}</div>
+                        <div className="font-semibold text-sm truncate" style={{color:theme.navy}}>{track.trackName}</div>
                         <div className="text-xs truncate" style={{color:'#6B7280'}}>{track.artistName}</div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {track.previewUrl && (
-                          <button onClick={() => playPreview(track.previewUrl)} className="w-8 h-8 rounded-full flex items-center justify-center text-sm" style={{background: playing === track.previewUrl ? '#B07D6E' : '#F5EAE4', color: playing === track.previewUrl ? '#ffffff' : '#B07D6E'}}>
+                          <button onClick={() => playPreview(track.previewUrl)} className="w-8 h-8 rounded-full flex items-center justify-center text-sm" style={{background: playing === track.previewUrl ? theme.primary : theme.blush, color: playing === track.previewUrl ? '#ffffff' : theme.primary}}>
                             {playing === track.previewUrl ? '⏸' : '▶'}
                           </button>
                         )}
-                        <button onClick={() => addSong(track)} className="px-3 h-8 rounded-lg text-xs font-semibold" style={{background: added === track.trackId ? '#7A9E8A' : '#B07D6E', color:'#ffffff'}}>
+                        <button onClick={() => addSong(track)} className="px-3 h-8 rounded-lg text-xs font-semibold" style={{background: added === track.trackId ? '#7A9E8A' : theme.primary, color:'#ffffff'}}>
                           {added === track.trackId ? '✓ Added' : '+ Add'}
                         </button>
                       </div>
@@ -451,14 +454,14 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
 
             {songList.length > 0 && (
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-                <h3 className="font-semibold mb-4" style={{color:'#2C2C3E'}}>Wedding Playlist ({songList.length} songs)</h3>
+                <h3 className="font-semibold mb-4" style={{color:theme.navy}}>Wedding Playlist ({songList.length} songs)</h3>
                 <div className="space-y-3">
                   {songList.map((s, i) => (
-                    <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl" style={{background:'#F5EAE4'}}>
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0" style={{background:'#B07D6E', color:'#ffffff'}}>{i + 1}</div>
+                    <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl" style={{background:theme.blush}}>
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0" style={{background:theme.primary, color:'#ffffff'}}>{i + 1}</div>
                       {s.artwork_url && <img src={s.artwork_url} alt={s.track_name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />}
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm truncate" style={{color:'#2C2C3E'}}>{s.track_name}</div>
+                        <div className="font-semibold text-sm truncate" style={{color:theme.navy}}>{s.track_name}</div>
                         <div className="text-xs" style={{color:'#6B7280'}}>{s.artist_name} · {s.submitter}</div>
                       </div>
                     </div>
@@ -473,16 +476,16 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
           <div className="pb-12 space-y-4">
             <div className="bg-white rounded-2xl p-6 text-center" style={{border:'1px solid #E8DDD8'}}>
               <div className="text-4xl mb-3">📸</div>
-              <h2 className="font-semibold text-lg mb-2" style={{color:'#2C2C3E'}}>Share Your Photos</h2>
+              <h2 className="font-semibold text-lg mb-2" style={{color:theme.navy}}>Share Your Photos</h2>
               <p className="text-sm mb-4" style={{color:'#6B7280'}}>Snap a moment from the celebration and add it to the shared gallery.</p>
-              <Link href={`/upload/${wedding.slug}`} className="inline-block px-6 py-3 rounded-xl text-sm font-semibold" style={{background:'#B07D6E', color:'#ffffff'}}>
+              <Link href={`/upload/${wedding.slug}`} className="inline-block px-6 py-3 rounded-xl text-sm font-semibold" style={{background:theme.primary, color:'#ffffff'}}>
                 Add a Photo
               </Link>
             </div>
 
             {photos.length > 0 && (
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-                <h3 className="font-semibold mb-4" style={{color:'#2C2C3E'}}>Gallery ({photos.length})</h3>
+                <h3 className="font-semibold mb-4" style={{color:theme.navy}}>Gallery ({photos.length})</h3>
                 <PhotoGallery photos={photos} />
               </div>
             )}
@@ -494,29 +497,29 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
             {!wedding.is_premium ? (
               <div className="bg-white rounded-2xl p-8 text-center" style={{border:'1px solid #E8DDD8'}}>
                 <div className="text-4xl mb-3">🔒</div>
-                <h2 className="font-semibold text-lg mb-2" style={{color:'#2C2C3E'}}>Wishes Wall Not Yet Available</h2>
+                <h2 className="font-semibold text-lg mb-2" style={{color:theme.navy}}>Wishes Wall Not Yet Available</h2>
                 <p className="text-sm" style={{color:'#6B7280'}}>{coupleName} haven't unlocked the Wishes Wall for this wedding yet. Check back later!</p>
               </div>
             ) : wishDone ? (
               <div className="bg-white rounded-2xl p-8 text-center" style={{border:'1px solid #E8DDD8'}}>
                 <div className="text-5xl mb-4">💌</div>
-                <h2 className="font-serif text-2xl font-bold mb-2" style={{color:'#2C2C3E'}}>Thank you, {wishName}!</h2>
+                <h2 className="font-serif text-2xl font-bold mb-2" style={{color:theme.navy}}>Thank you, {wishName}!</h2>
                 <p style={{color:'#6B7280'}}>Your wish has been added to the wall.</p>
               </div>
             ) : (
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-                <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>Leave a Wish</h2>
+                <h2 className="font-semibold text-lg mb-4" style={{color:theme.navy}}>Leave a Wish</h2>
                 {wishError && <div className="mb-4 p-3 rounded-xl text-sm" style={{background:'#FEE2E2', color:'#DC2626'}}>{wishError}</div>}
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Your Name</label>
-                    <input value={wishName} onChange={e => setWishName(e.target.value)} placeholder="e.g. Aunt Carol" className="w-full h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
+                    <input value={wishName} onChange={e => setWishName(e.target.value)} placeholder="e.g. Aunt Carol" className="w-full h-12 px-4 rounded-xl outline-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:theme.navy}} />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2" style={{color:'#475569'}}>Your Message</label>
-                    <textarea value={wishMessage} onChange={e => setWishMessage(e.target.value)} placeholder="Share your wishes for the happy couple..." rows={4} className="w-full px-4 py-3 rounded-xl outline-none resize-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:'#2C2C3E'}} />
+                    <textarea value={wishMessage} onChange={e => setWishMessage(e.target.value)} placeholder="Share your wishes for the happy couple..." rows={4} className="w-full px-4 py-3 rounded-xl outline-none resize-none" style={{border:'1px solid #E8DDD8', background:'#F8FAFC', color:theme.navy}} />
                   </div>
-                  <button onClick={submitWish} disabled={!wishName || !wishMessage || wishLoading} className="w-full font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2" style={{background:'#B07D6E', color:'#ffffff'}}>
+                  <button onClick={submitWish} disabled={!wishName || !wishMessage || wishLoading} className="w-full font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2" style={{background:theme.primary, color:'#ffffff'}}>
                     {wishLoading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>Submitting...</> : 'Add Your Wish 💌'}
                   </button>
                 </div>
@@ -525,12 +528,12 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
 
             {wedding.is_premium && wishList.length > 0 && (
               <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-                <h3 className="font-semibold mb-4" style={{color:'#2C2C3E'}}>Wishes ({wishList.length})</h3>
+                <h3 className="font-semibold mb-4" style={{color:theme.navy}}>Wishes ({wishList.length})</h3>
                 <div className="space-y-3">
                   {wishList.map(w => (
-                    <div key={w.id} className="p-4 rounded-xl" style={{background:'#F5EAE4'}}>
-                      <p className="text-sm italic mb-2" style={{color:'#2C2C3E'}}>"{w.message}"</p>
-                      <p className="text-xs font-semibold" style={{color:'#B07D6E'}}>— {w.guest_name}</p>
+                    <div key={w.id} className="p-4 rounded-xl" style={{background:theme.blush}}>
+                      <p className="text-sm italic mb-2" style={{color:theme.navy}}>"{w.message}"</p>
+                      <p className="text-xs font-semibold" style={{color:theme.primary}}>— {w.guest_name}</p>
                     </div>
                   ))}
                 </div>
@@ -541,11 +544,10 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
       </div>
 
       <div className="text-center py-8 px-6" style={{borderTop:'1px solid #E8DDD8'}}>
-        <Link href="/" className="text-sm" style={{color:'#B07D6E'}}>
+        <Link href="/" className="text-sm" style={{color:theme.primary}}>
           💍 Create your own wedding page at <strong>Day of Us</strong>
         </Link>
       </div>
     </div>
   );
 }
-
