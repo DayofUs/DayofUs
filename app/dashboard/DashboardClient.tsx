@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import PhotoGallery from '@/components/PhotoGallery';
 import jsPDF from 'jspdf';
+import { THEMES } from '@/lib/themes';
 
 interface Wedding {
   id: string;
@@ -18,6 +19,7 @@ interface Wedding {
   message: string | null;
   is_premium?: boolean | null;
   meal_options?: string[] | null;
+  theme?: string | null;
 }
 
 interface User {
@@ -149,6 +151,9 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
   const [newRegistryLabel, setNewRegistryLabel] = useState('');
   const [newRegistryUrl, setNewRegistryUrl] = useState('');
   const [addingRegistry, setAddingRegistry] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState(wedding?.theme || 'rose');
+  const [savingTheme, setSavingTheme] = useState(false);
+  const [themeSaved, setThemeSaved] = useState(false);
   const router = useRouter();
 
   const coupleName = wedding ? `${wedding.partner1_name} & ${wedding.partner2_name}` : 'Your Wedding';
@@ -351,6 +356,19 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
     const supabase = createClient();
     await supabase.from('wedding_registry_links').delete().eq('id', id);
     setRegistryList(prev => prev.filter(r => r.id !== id));
+  };
+
+  const saveTheme = async (themeKey: string) => {
+    if (!wedding) return;
+    setSelectedTheme(themeKey);
+    setSavingTheme(true);
+    const supabase = createClient();
+    const { error } = await supabase.from('weddings').update({ theme: themeKey }).eq('id', wedding.id);
+    setSavingTheme(false);
+    if (!error) {
+      setThemeSaved(true);
+      setTimeout(() => setThemeSaved(false), 2000);
+    }
   };
 
   const exportPDF = () => {
@@ -587,6 +605,51 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
           )}
         </div>
       )}
+
+      {/* Guest Page Theme */}
+      <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
+        <h2 className="font-semibold text-lg mb-1" style={{color:'#2C2C3E'}}>🎨 Guest Page Theme</h2>
+        <p className="text-sm mb-4" style={{color:'#6B7280'}}>Choose a color palette for your guest page.</p>
+
+        {!wedding?.is_premium ? (
+          <div className="p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{background:'#F5EAE4'}}>
+            <div>
+              <div className="text-sm font-semibold" style={{color:'#2C2C3E'}}>Unlock More Themes</div>
+              <div className="text-xs" style={{color:'#6B7280'}}>Plus unlimited photos, wishes wall, custom slug & more — one-time $19</div>
+            </div>
+            <button
+              onClick={handleUpgrade}
+              disabled={upgrading}
+              className="font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-40 flex-shrink-0"
+              style={{background:'#B07D6E', color:'#ffffff'}}
+            >
+              {upgrading ? 'Redirecting...' : 'Upgrade to Premium'}
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {Object.values(THEMES).map(theme => (
+              <button
+                key={theme.key}
+                onClick={() => saveTheme(theme.key)}
+                disabled={savingTheme}
+                className="p-3 rounded-xl border-2 text-left transition-all"
+                style={{borderColor: selectedTheme === theme.key ? theme.primary : '#E8DDD8', background: selectedTheme === theme.key ? theme.blush : '#FFFFFF'}}
+              >
+                <div className="flex gap-1 mb-2">
+                  <div className="w-6 h-6 rounded-full" style={{background: theme.primary}}></div>
+                  <div className="w-6 h-6 rounded-full" style={{background: theme.accent}}></div>
+                  <div className="w-6 h-6 rounded-full" style={{background: theme.navy}}></div>
+                </div>
+                <div className="text-xs font-semibold" style={{color:'#2C2C3E'}}>{theme.name}</div>
+                {selectedTheme === theme.key && (
+                  <div className="text-xs mt-1" style={{color: theme.primary}}>{themeSaved ? '✓ Saved' : 'Selected'}</div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Wedding details */}
       <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
@@ -1117,4 +1180,3 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
     </main>
   );
 }
-
