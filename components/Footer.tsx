@@ -28,6 +28,7 @@ export default function Footer() {
               <li><Link href="/rsvp" className="hover:text-white transition-colors">Guest RSVP</Link></li>
               <li><Link href="/playlist" className="hover:text-white transition-colors">Song Requests</Link></li>
               <li><Link href="/guides/wedding-budget-breakdown" className="hover:text-white transition-colors">Wedding Budget Breakdown Guide</Link></li>
+              <li><Link href="/guides/wedding-guest-list-size" className="hover:text-white transition-colors">Guest List Size Guide</Link></li>
             </ul>
           </div>
           <div>
