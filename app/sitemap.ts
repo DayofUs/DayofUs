@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/checklist`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/venue`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/guides/wedding-budget-breakdown`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.7 },
+    { url: `${baseUrl}/guides/wedding-guest-list-size`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.7 },
     { url: `${baseUrl}/privacy`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
   ]
