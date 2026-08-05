@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
+const MAX_FILE_SIZE_MB = 100;
+
 export default function UploadClient({
   weddingId,
   partner1Name,
@@ -15,6 +17,7 @@ export default function UploadClient({
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [isVideo, setIsVideo] = useState(false);
   const [name, setName] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -23,13 +26,20 @@ export default function UploadClient({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
+
+    if (selected.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setError(`That file is too large. Please choose something under ${MAX_FILE_SIZE_MB}MB.`);
+      return;
+    }
+
     setFile(selected);
+    setIsVideo(selected.type.startsWith('video/'));
     setPreview(URL.createObjectURL(selected));
     setError('');
   };
 
   const handleUpload = async () => {
-    if (!file) { setError('Please choose or take a photo first.'); return; }
+    if (!file) { setError('Please choose or take a photo or video first.'); return; }
     setUploading(true);
     setError('');
 
@@ -55,10 +65,11 @@ export default function UploadClient({
       wedding_id: weddingId,
       photo_url: urlData.publicUrl,
       uploaded_by: name || null,
+      media_type: isVideo ? 'video' : 'photo',
     });
 
     if (insertError) {
-      setError('Something went wrong saving your photo. Please try again.');
+      setError('Something went wrong saving your upload. Please try again.');
       setUploading(false);
       return;
     }
@@ -70,6 +81,7 @@ export default function UploadClient({
   const handleUploadAnother = () => {
     setFile(null);
     setPreview(null);
+    setIsVideo(false);
     setSuccess(false);
   };
 
@@ -78,10 +90,10 @@ export default function UploadClient({
       <main className="max-w-md mx-auto px-6 py-20 text-center" style={{background:'#FDFAF7', minHeight: '100vh'}}>
         <div className="text-5xl mb-6">📸</div>
         <h1 className="font-serif text-2xl font-bold mb-3" style={{color:'#2C2C3E'}}>
-          Photo Gallery Full
+          Gallery Full
         </h1>
         <p style={{color:'#6B7280'}}>
-          {partner1Name} & {partner2Name}'s free photo gallery has reached its limit. Thanks so much for wanting to share!
+          {partner1Name} & {partner2Name}'s free gallery has reached its limit. Thanks so much for wanting to share!
         </p>
       </main>
     );
@@ -91,7 +103,7 @@ export default function UploadClient({
     return (
       <main className="max-w-md mx-auto px-6 py-20 text-center" style={{background:'#FDFAF7', minHeight: '100vh'}}>
         <div className="text-5xl mb-6">🎉</div>
-        <h1 className="font-serif text-2xl font-bold mb-3" style={{color:'#2C2C3E'}}>Photo Uploaded!</h1>
+        <h1 className="font-serif text-2xl font-bold mb-3" style={{color:'#2C2C3E'}}>{isVideo ? 'Video' : 'Photo'} Uploaded!</h1>
         <p className="mb-8" style={{color:'#6B7280'}}>
           Thank you for sharing this moment with {partner1Name} & {partner2Name}.
         </p>
@@ -100,7 +112,7 @@ export default function UploadClient({
           className="font-semibold px-6 py-3 rounded-xl"
           style={{background:'#B07D6E', color:'#ffffff'}}
         >
-          Upload Another Photo
+          Upload Another
         </button>
       </main>
     );
@@ -111,7 +123,7 @@ export default function UploadClient({
       <div className="text-center mb-8">
         <div className="text-4xl mb-4">📸</div>
         <h1 className="font-serif text-2xl font-bold mb-2" style={{color:'#2C2C3E'}}>
-          Share a Photo
+          Share a Photo or Video
         </h1>
         <p style={{color:'#6B7280'}}>
           {partner1Name} & {partner2Name}'s Wedding
@@ -125,7 +137,11 @@ export default function UploadClient({
 
         {preview ? (
           <div className="mb-4">
-            <img src={preview} alt="Preview" className="w-full rounded-xl" style={{maxHeight: '320px', objectFit: 'cover'}} />
+            {isVideo ? (
+              <video src={preview} controls className="w-full rounded-xl" style={{maxHeight: '320px'}} />
+            ) : (
+              <img src={preview} alt="Preview" className="w-full rounded-xl" style={{maxHeight: '320px', objectFit: 'cover'}} />
+            )}
           </div>
         ) : (
           <div className="flex gap-3 mb-4">
@@ -134,10 +150,10 @@ export default function UploadClient({
               style={{border: '2px dashed #E8DDD8', background: '#F8FAFC'}}
             >
               <span className="text-2xl mb-1">📷</span>
-              <span className="text-xs font-medium text-center px-2" style={{color:'#6B7280'}}>Take Photo</span>
+              <span className="text-xs font-medium text-center px-2" style={{color:'#6B7280'}}>Take Photo/Video</span>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 capture="environment"
                 onChange={handleFileSelect}
                 className="hidden"
@@ -151,7 +167,7 @@ export default function UploadClient({
               <span className="text-xs font-medium text-center px-2" style={{color:'#6B7280'}}>Choose from Gallery</span>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -165,7 +181,7 @@ export default function UploadClient({
               📷 Retake
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 capture="environment"
                 onChange={handleFileSelect}
                 className="hidden"
@@ -175,7 +191,7 @@ export default function UploadClient({
               🖼️ Choose Different
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -203,7 +219,7 @@ export default function UploadClient({
         >
           {uploading ? (
             <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>Uploading...</>
-          ) : 'Upload Photo'}
+          ) : `Upload ${isVideo ? 'Video' : 'Photo'}`}
         </button>
       </div>
     </main>
