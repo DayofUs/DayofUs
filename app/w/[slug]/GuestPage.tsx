@@ -37,6 +37,7 @@ interface Photo {
   id: string;
   photo_url: string;
   uploaded_by: string | null;
+  media_type?: string | null;
 }
 
 interface Wish {
