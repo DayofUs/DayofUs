@@ -154,7 +154,7 @@ export default function PhotoGallery({ photos }: { photos: Photo[] }) {
             >
               {isVideo(p) ? (
                 <div className="relative w-full h-full">
-                  <video src={p.photo_url} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+                  <video src={p.photo_url} className="w-full h-full object-contain" style={{background:'#2C2C3E'}} muted playsInline preload="metadata" />
                   <div className="absolute inset-0 flex items-center justify-center" style={{background:'rgba(0,0,0,0.2)'}}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{background:'rgba(255,255,255,0.9)'}}>
                       <div style={{width: 0, height: 0, borderTop: '6px solid transparent', borderBottom: '6px solid transparent', borderLeft: '10px solid #2C2C3E', marginLeft: '3px'}} />
