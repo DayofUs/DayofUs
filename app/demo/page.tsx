@@ -74,13 +74,13 @@ export default function DemoPage() {
             </div>
 
             <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
-              <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>📸 Photo Gallery</h2>
+              <h2 className="font-semibold text-lg mb-4" style={{color:'#2C2C3E'}}>📸 Photo & Video Gallery</h2>
               <div className="grid grid-cols-3 gap-2">
                 {[1,2,3,4,5,6].map(i => (
                   <div key={i} className="aspect-square rounded-xl flex items-center justify-center text-2xl" style={{background:'#F5EAE4'}}>📷</div>
                 ))}
               </div>
-              <p className="text-xs mt-3 text-center" style={{color:'#6B7280'}}>Guests scan a QR code and upload straight from their phone</p>
+              <p className="text-xs mt-3 text-center" style={{color:'#6B7280'}}>Guests scan a QR code and upload photos or videos straight from their phone</p>
             </div>
 
             <div className="bg-white rounded-2xl p-6" style={{border:'1px solid #E8DDD8'}}>
@@ -137,4 +137,3 @@ export default function DemoPage() {
     </>
   );
 }
-
