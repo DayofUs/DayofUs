@@ -477,10 +477,10 @@ export default function GuestPage({ wedding, rsvps, songs, photos = [], wishes =
           <div className="pb-12 space-y-4">
             <div className="bg-white rounded-2xl p-6 text-center" style={{border:'1px solid #E8DDD8'}}>
               <div className="text-4xl mb-3">📸</div>
-              <h2 className="font-semibold text-lg mb-2" style={{color:theme.navy}}>Share Your Photos</h2>
+              <h2 className="font-semibold text-lg mb-2" style={{color:theme.navy}}>Share Your Photos & Videos</h2>
               <p className="text-sm mb-4" style={{color:'#6B7280'}}>Snap a moment from the celebration and add it to the shared gallery.</p>
               <Link href={`/upload/${wedding.slug}`} className="inline-block px-6 py-3 rounded-xl text-sm font-semibold" style={{background:theme.primary, color:'#ffffff'}}>
-                Add a Photo
+                Add a Photo or Video
               </Link>
             </div>
 
