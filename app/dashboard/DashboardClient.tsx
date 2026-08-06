@@ -564,15 +564,15 @@ export default function DashboardClient({ user, wedding, rsvps, songs, photos = 
       {wedding?.slug && (
         <div className="bg-white rounded-2xl p-6 mb-8" style={{border:'1px solid #E8DDD8'}}>
           <h2 className="font-semibold text-lg mb-1" style={{color:'#2C2C3E'}}>
-            📸 Photo Gallery ({photos.length}{!wedding.is_premium ? '/30' : ''})
+            📸 Photo & Video Gallery ({photos.length}{!wedding.is_premium ? '/30' : ''})
           </h2>
           <p className="text-sm mb-4" style={{color:'#6B7280'}}>
-            Guests scan this code at your wedding to upload photos straight from their phone — no app needed.
+            Guests scan this code at your wedding to upload photos and videos straight from their phone — no app needed.
           </p>
           {!wedding.is_premium && (
             <div className="mb-6 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{background:'#F5EAE4'}}>
               <div>
-                <div className="text-sm font-semibold" style={{color:'#2C2C3E'}}>Unlock unlimited photos</div>
+                <div className="text-sm font-semibold" style={{color:'#2C2C3E'}}>Unlock unlimited photos & videos</div>
                 <div className="text-xs" style={{color:'#6B7280'}}>Plus custom slug, unlimited guests, wishes wall & PDF export — one-time $19</div>
               </div>
               <button
