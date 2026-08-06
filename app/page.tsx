@@ -5,7 +5,7 @@ import Link from 'next/link';
 const guestFeatures = [
   { icon: '✉️', title: 'Guest RSVP', desc: 'A beautiful RSVP form that collects attendance, dietary requirements and messages — all in one place.', color: 'bg-[#E8F0EC]' },
   { icon: '🎵', title: 'Song Requests', desc: 'Guests search and request songs with 30-second previews before adding them to your playlist.', color: 'bg-[#EAE4F5]' },
-  { icon: '📸', title: 'QR Photo Gallery', desc: 'Guests scan a QR code at your wedding and upload photos straight from their phone — no app needed.', color: 'bg-[#F5EAE4]' },
+  { icon: '📸', title: 'QR Photo & Video Gallery', desc: 'Guests scan a QR code at your wedding and upload photos and videos straight from their phone — no app needed.', color: 'bg-[#F5EAE4]' },
   { icon: '💌', title: 'Wishes Wall', desc: 'A dedicated space for guests to leave heartfelt messages for you both.', color: 'bg-[#F5E6C8]' },
   { icon: '📅', title: 'Live Countdown', desc: 'A live countdown to your big day, shown right on your guest page.', color: 'bg-[#E8F0EC]' },
   { icon: '💰', title: 'Budget Planner', desc: 'Track every category of your wedding spend, with AI advice when you need it.', color: 'bg-[#EAE4F5]' },
@@ -156,7 +156,7 @@ export default function HomePage() {
                 <div className="text-sm font-semibold uppercase tracking-wider mb-2" style={{color:'#6B7280'}}>Free</div>
                 <div className="font-serif text-4xl font-bold mb-6" style={{color:'#2C2C3E'}}>$0</div>
                 <ul className="space-y-3 mb-8">
-                  {['Your own wedding page & shareable link', 'Guest RSVPs with meal choices (up to 75 guests)', 'Song requests with previews', 'Photo gallery via QR code (up to 30 photos)', 'Budget planner & live countdown', 'Wedding checklist & venue comparison tool'].map(item => (
+                  {['Your own wedding page & shareable link', 'Guest RSVPs with meal choices (up to 75 guests)', 'Song requests with previews', 'Photo & video gallery via QR code (up to 30 items)', 'Budget planner & live countdown', 'Wedding checklist & venue comparison tool'].map(item => (
                     <li key={item} className="flex items-start gap-2 text-sm" style={{color:'#475569'}}>
                       <span style={{color:'#7A9E8A'}}>✓</span> {item}
                     </li>
@@ -172,7 +172,7 @@ export default function HomePage() {
                 <div className="text-sm font-semibold uppercase tracking-wider mb-2" style={{color:'#B07D6E'}}>Premium</div>
                 <div className="font-serif text-4xl font-bold mb-6" style={{color:'#2C2C3E'}}>$19</div>
                 <ul className="space-y-3 mb-8">
-                  {['Everything in Free, plus:', 'Unlimited photo uploads', 'Unlimited guests', 'Custom link (dayofus.org/w/yourname)', 'Wishes wall for guest messages', 'Wedding party bios', 'Guest FAQ section', 'Registry links', 'PDF export of guest list & playlist'].map(item => (
+                  {['Everything in Free, plus:', 'Unlimited photo & video uploads', 'Unlimited guests', 'Custom link (dayofus.org/w/yourname)', 'Wishes wall for guest messages', 'Wedding party bios', 'Guest FAQ section', 'Registry links', 'PDF export of guest list & playlist'].map(item => (
                     <li key={item} className="flex items-start gap-2 text-sm" style={{color: item.startsWith('Everything') ? '#6B7280' : '#475569', fontStyle: item.startsWith('Everything') ? 'italic' : 'normal'}}>
                       {!item.startsWith('Everything') && <span style={{color:'#7A9E8A'}}>✓</span>} {item}
                     </li>
