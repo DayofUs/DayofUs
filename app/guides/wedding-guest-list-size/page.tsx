@@ -30,7 +30,7 @@ export default function WeddingGuestListSizePage() {
             publisher: {
               "@type": "Organization",
               name: "Day of Us",
-              logo: { "@type": "ImageObject", url: "https://dayofus.org/icon-512.png" },
+              logo: { "@type": "ImageObject", url: "https://www.dayofus.org/icon-512.png" },
             },
           }),
         }}
