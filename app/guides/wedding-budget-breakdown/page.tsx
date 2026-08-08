@@ -25,6 +25,29 @@ const breakdown = [
 export default function WeddingBudgetBreakdownPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: "Wedding Budget Breakdown: How Much to Spend on Each Category",
+            description: "A realistic wedding budget breakdown by category — venue, catering, photography, and more — plus a free calculator to plan your own.",
+            author: {
+              "@type": "Organization",
+              name: "Day of Us",
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "Day of Us",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://www.dayofus.org/icon-512.png",
+              },
+            },
+          }),
+        }}
+      />
       <Header />
       <main className="max-w-3xl mx-auto px-6 py-12">
         <div className="mb-10">
