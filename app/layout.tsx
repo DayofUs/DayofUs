@@ -3,8 +3,12 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.dayofus.org"),
   title: "Day of Us — Free Wedding Website & Guest Hub",
   description: "Create a free wedding page in minutes. Guests RSVP, request songs, upload photos and leave wishes — all from one link you share. No app required.",
+  alternates: {
+    canonical: "/",
+  },
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -16,11 +20,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Day of Us — Free Wedding Website & Guest Hub",
     description: "Create a free wedding page in minutes. Guests RSVP, request songs, upload photos and leave wishes — all from one link you share. No app required.",
-    url: "https://dayofus.org",
+    url: "https://www.dayofus.org",
     siteName: "Day of Us",
     images: [
       {
-        url: "https://dayofus.org/og-image.png",
+        url: "https://www.dayofus.org/og-image.png",
         width: 1200,
         height: 630,
         alt: "Day of Us — One Wedding Page, Everything Included",
@@ -33,7 +37,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Day of Us — Free Wedding Website & Guest Hub",
     description: "Create a free wedding page in minutes. Guests RSVP, request songs, upload photos and leave wishes — all from one link you share. No app required.",
-    images: ["https://dayofus.org/og-image.png"],
+    images: ["https://www.dayofus.org/og-image.png"],
   },
 };
 
@@ -55,8 +59,8 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "Day of Us",
-              url: "https://dayofus.org",
-              logo: "https://dayofus.org/icon-512.png",
+              url: "https://www.dayofus.org",
+              logo: "https://www.dayofus.org/icon-512.png",
               description: "A free wedding website builder with RSVPs, song requests, QR code photo uploads, and guest wishes.",
             }),
           }}
@@ -68,7 +72,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "Day of Us",
-              url: "https://dayofus.org",
+              url: "https://www.dayofus.org",
             }),
           }}
         />
