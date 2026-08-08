@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/dashboard', '/api/'],
     },
-    sitemap: 'https://dayofus.org/sitemap.xml',
+    sitemap: 'https://www.dayofus.org/sitemap.xml',
   }
 }
